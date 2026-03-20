@@ -1,1 +1,1253 @@
-placeholder
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Algoritmos 2 — ORT Uruguay</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --bg-card: #12121a;
+    --bg-card-hover: #1a1a26;
+    --bg-code: #1e1e2e;
+    --border: #2a2a3a;
+    --border-active: #6c5ce7;
+    --text: #e8e8f0;
+    --text-muted: #8888a0;
+    --text-dim: #5a5a70;
+    --accent: #6c5ce7;
+    --accent-light: #a29bfe;
+    --accent-glow: rgba(108, 92, 231, 0.15);
+    --green: #00b894;
+    --green-bg: rgba(0, 184, 148, 0.1);
+    --red: #ff6b6b;
+    --red-bg: rgba(255, 107, 107, 0.1);
+    --yellow: #ffc048;
+    --yellow-bg: rgba(255, 192, 72, 0.1);
+    --blue: #74b9ff;
+    --blue-bg: rgba(116, 185, 255, 0.1);
+    --orange: #e17055;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }   margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .avl-controls input {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    width: 120px;
+    outline: none;
+  }
+  .avl-controls input:focus { border-color: var(--accent); }
+  .avl-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .avl-btn:hover { filter: brightness(1.15); }
+  .avl-btn.secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .avl-btn.secondary:hover { border-color: var(--accent); color: var(--accent-light); }
+  #avl-canvas {
+    width: 100%;
+    min-height: 300px;
+    background: var(--bg-code);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+
+  /* ── ROTATION LAB ── */
+  .rot-lab {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 20px 0;
+  }
+  .rot-lab-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+  .rot-lab-tab {
+    flex: 1;
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+  .rot-lab-tab:hover { color: var(--text-muted); background: var(--accent-glow); }
+  .rot-lab-tab.active { color: var(--accent-light); border-bottom-color: var(--accent); background: var(--accent-glow); }
+  .rot-lab-content { padding: 28px; }
+  .rot-lab-canvas-wrap {
+    position: relative;
+    background: var(--bg-code);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .rot-lab-canvas-wrap canvas {
+    width: 100%;
+    display: block;
+  }
+  .rot-lab-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .step-btn {
+    padding: 10px 22px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .step-btn:hover { border-color: var(--accent); color: var(--accent-light); background: var(--accent-glow); }
+  .step-btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+  .step-btn.primary:hover { filter: brightness(1.15); }
+  .step-btn:disabled { opacity: 0.3; pointer-events: none; }
+  .step-indicator {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+  }
+  .step-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: all 0.3s;
+  }
+  .step-dot.active { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .step-dot.done { background: var(--green); }
+  .step-narration {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+    min-height: 60px;
+  }
+  .step-narration .highlight { color: var(--accent-light); font-weight: 700; }
+  .step-narration .node-label {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 1px 8px;
+    border-radius: 5px;
+  }
+  .step-narration .code-ref {
+    display: inline;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--green);
+  }
+
+  /* ── BALANCE CHECKER ── */
+  .balance-checker {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin: 20px 0;
+  }
+  .bc-input-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .bc-input-row input {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    flex: 1;
+    min-width: 200px;
+    outline: none;
+  }
+  .bc-input-row input:focus { border-color: var(--accent); }
+  .bc-result {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .bc-result canvas {
+    width: 100%;
+    display: block;
+  }
+  .bc-fb-table {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+  .fb-ok { color: var(--green); }
+  .fb-bad { color: var(--red); font-weight: 700; }</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <h2>Algo 2</h2>
+    <p>Universidad ORT Uruguay</p>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Temas</div>
+    <a class="nav-link active" id="nav-avl" onclick="showTopic('avl')">
+      <span class="nav-icon">🌳</span> Árboles AVL
+    </a>
+    <a class="nav-link" id="nav-hash" onclick="showTopic('hash')">
+      <span class="nav-icon">#️⃣</span> Tablas de Hash
+      <span class="nav-badge">NUEVO</span>
+    </a>
+  </div>
+  <div class="nav-section" style="margin-top:16px;" id="sidenav-avl">
+    <div class="nav-section-title">AVL — Secciones</div>
+    <a class="nav-link sub-nav" onclick="scrollToSection('avl-intro')">
+      <span class="nav-icon">1</span> ¿Qué es un AVL?
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('avl-why')">
+      <span class="nav-icon">2</span> ¿Por qué usarlos?
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('avl-when')">
+      <span class="nav-icon">3</span> ¿Cuándo usarlos?
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('avl-balance')">
+      <span class="nav-icon">4</span> Balance y alturas
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('avl-rotations')">
+      <span class="nav-icon">5</span> Rotaciones
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('avl-scenarios')">
+      <span class="nav-icon">6</span> Los 4 escenarios
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('avl-code')">
+      <span class="nav-icon">7</span> Implementación
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('avl-algo')">
+      <span class="nav-icon">8</span> Algoritmo paso a paso
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('avl-rot-lab')">
+      <span class="nav-icon">🔬</span> Lab de Rotaciones
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('avl-code-viz')">
+      <span class="nav-icon">🖱️</span> Código Interactivo
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('avl-balance-check')">
+      <span class="nav-icon">⚖️</span> Checker de Balance
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('avl-interactive')">
+      <span class="nav-icon">⚡</span> AVL Interactivo
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('avl-exercises')">
+      <span class="nav-icon">✏️</span> Ejercicios
+    </a>
+  </div>
+  <div class="nav-section" style="margin-top:0;display:none;" id="sidenav-hash">
+    <div class="nav-section-title">Hash — Secciones</div>
+    <a class="nav-link sub-nav" onclick="scrollToSection('hash-intro')">
+      <span class="nav-icon">1</span> ¿Qué es una Tabla?
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('hash-vocab')">
+      <span class="nav-icon">2</span> Vocabulario
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('hash-function')">
+      <span class="nav-icon">3</span> Función de Hash
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('hash-collisions')">
+      <span class="nav-icon">4</span> Colisiones
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('hash-open')">
+      <span class="nav-icon">5</span> Hash Abierto
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('hash-closed')">
+      <span class="nav-icon">6</span> Hash Cerrado
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('hash-loadfactor')">
+      <span class="nav-icon">7</span> Factor de Carga
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('hash-codigo')">
+      <span class="nav-icon">8</span> Código del Profesor
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('hash-interactive')">
+      <span class="nav-icon">⚡</span> Visualizador
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('hash-exercises')">
+      <span class="nav-icon">✏️</span> Ejercicios
+    </a>
+  </div>
+</nav>
+
+<!-- TOGGLE -->
+<button class="toggle-sidebar" onclick="toggleSidebar()">☰</button>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">Algoritmos y Estructuras de Datos 2</div>
+    <h1>Tu guía para <span>dominar el curso</span></h1>
+    <p>Resúmenes, claves conceptuales, código, visualizaciones y ejercicios. Todo lo que necesitás para salvar cada parcial.</p>
+    <div class="progress-bar-container">
+      <div class="progress-label">
+        <span>Progreso del curso</span>
+        <span id="progress-text">2 / ? temas</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width: 16%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-area">al código</li>
+            <li>Si los datos ya vienen razonablemente balanceados, un ABB simple puede ser suficiente</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- SECTION 4: Balance y alturas -->
+      <div class="section-block" id="avl-balance">
+        <h2><span class="sec-num">4</span> Balance y cálculo de alturas</h2>
+
+        <h3>Factor de balance</h3>
+        <p>Para cada nodo, definimos el <strong>factor de balance</strong> (FB) como:</p>
+        <pre>FB(nodo) = altura(nodo->der) - altura(nodo->izq)</pre>
+        <ul style="margin-top:12px;">
+          <li><span class="inline-code">FB = 0</span> → perfectamente balanceado</li>
+          <li><span class="inline-code">FB = 1</span> → subárbol derecho 1 más alto (aceptable)</li>
+          <li><span class="inline-code">FB = -1</span> → subárbol izquierdo 1 más alto (aceptable)</li>
+          <li><span class="inline-code">FB &gt; 1</span> → <strong style="color:var(--red)">desbalance a la derecha</strong></li>
+          <li><span class="inline-code">FB &lt; -1</span> → <strong style="color:var(--red)">desbalance a la izquierda</strong></li>
+        </ul>
+
+        <h3>Función altura</h3>
+        <p>La misma función que en un ABB, pero con un detalle crucial: <strong>debés manejar el caso NULL</strong>.</p>
+        <pre><span class="code-type">int</span> <span class="code-func">altura</span>(<span class="code-type">NodoAVL</span> *nodo) {
+    <span class="code-keyword">if</span> (nodo == <span class="code-keyword">NULL</span>)
+        <span class="code-keyword">return</span> <span class="code-number">-1</span>;  <span class="code-comment">// o 0, depende de la convención</span>
+    <span class="code-keyword">return</span> nodo->altura;
+}</pre>
+
+        <div class="info-box tip">
+          <div class="box-title">💡 Convención de altura</div>
+          <p>Hay dos convenciones: árbol vacío = -1 (la hoja tiene altura 0) o árbol vacío = 0 (la hoja tiene altura 1). <strong>Sé consistente</strong> con la que elijas durante todo tu código y durante todo el parcial.</p>
+        </div>
+
+        <h3>Encontrar el camino del desbalance</h3>
+        <p>Cuando insertás un nodo, el desbalance <strong>solo puede ocurrir en el camino de inserción</strong> (los nodos por los que pasaste desde la raíz hasta la hoja nueva). Usamos la <strong>recursión al volver</strong> (no tail-recursive) para chequear el balance de cada nodo en ese camino.</p>
+      </div>
+
+      <!-- SECTION 5: Rotaciones -->
+      <div class="section-block" id="avl-rotations">
+        <h2><span class="sec-num">5</span> Rotaciones</h2>
+
+        <p>Las rotaciones son el mecanismo que usa el AVL para <strong>recuperar el balance</strong> después de una inserción (o eliminación). Para cualquier desbalance causado por inserción, se necesita <strong>a lo sumo una rotación doble</strong>.</p>
+
+        <div class="info-box definition">
+          <div class="box-title">📐 Los 3 nodos clave: Z, Y, X</div>
+          <p>Después de insertar un nodo <strong>W</strong>:</p>
+          <ul>
+            <li><strong>Z</strong> = el primer nodo desbalanceado que encontrás subiendo desde W hacia la raíz</li>
+            <li><strong>Y</strong> = hijo de Z en el camino hacia W</li>
+            <li><strong>X</strong> = nieto de Z en el camino hacia W (puede ser W mismo)</li>
+          </ul>
+        </div>
+
+        <p>Existen <strong>4 tipos</strong> de rotaciones, que se agrupan en 2 simples y 2 compuestas:</p>
+
+        <!-- Rotation 1: Right -->
+        <div class="rotation-card">
+          <h4><span class="rot-badge">Caso Izq-Izq</span> Rotación a la derecha (horaria)</h4>
+          <p style="font-size:14px;color:var(--text-muted);margin-bottom:16px;">Y es hijo izquierdo de Z, X es hijo izquierdo de Y</p>
+          <div class="rotation-steps">
+            <div class="tree-diagram" style="margin:0;font-size:12px;text-align:left;">      Z
+     / \
+    Y   T4
+   / \
+  X   T3
+ / \
+T1  T2</div>
+            <div class="arrow">→</div>
+            <div class="tree-diagram" style="margin:0;font-size:12px;text-align:left;">      Y
+     / \
+    X   Z
+   / \ / \
+  T1 T2 T3 T4</div>
+          </div>
+        </div>
+
+        <!-- Rotation 2: Left -->
+        <div class="rotation-card">
+          <h4><span class="rot-badge">Caso Der-Der</span> Rotación a la izquierda (antihoraria)</h4>
+          <p style="font-size:14px;color:var(--text-muted);margin-bottom:16px;">Y es hijo derecho de Z, X es hijo derecho de Y</p>
+          <div class="rotation-steps">
+            <div class="tree-diagram" style="margin:0;font-size:12px;text-align:left;">  Z
+ / \
+T1  Y
+   / \
+  T2  X
+     / \
+    T3  T4</div>
+            <div class="arrow">→</div>
+            <div class="tree-diagram" style="margin:0;font-size:12px;text-align:left;">      Y
+     / \
+    Z   X
+   / \ / \
+  T1 T2 T3 T4</div>
+          </div>
+        </div>        <!-- Rotation 3: Left-Right -->
+        <div class="rotation-card">
+          <h4><span class="rot-badge">Caso Izq-Der</span> Rotación Izquierda en Y, luego Derecha en Z</h4>
+          <p style="font-size:14px;color:var(--text-muted);margin-bottom:16px;">Y es hijo izquierdo de Z, X es hijo derecho de Y</p>
+          <div class="rotation-steps">
+            <div class="tree-diagram" style="margin:0;font-size:12px;text-align:left;">    Z
+   / \
+  Y   T4
+ / \
+T1  X
+   / \
+  T2  T3</div>
+            <div class="arrow">→</div>
+            <div class="tree-diagram" style="margin:0;font-size:12px;text-align:left;">(Rot izq en Y)
+    Z
+   / \
+  X   T4
+ / \
+Y   T3
+/ \
+T1 T2</div>
+            <div class="arrow">→</div>
+            <div class="tree-diagram" style="margin:0;font-size:12px;text-align:left;">(Rot der en Z)
+      X
+     / \
+    Y   Z
+   / \ / \
+  T1 T2 T3 T4</div>
+          </div>
+        </div>
+
+        <!-- Rotation 4: Right-Left -->
+        <div class="rotation-card">
+          <h4><span class="rot-badge">Caso Der-Izq</span> Rotación Derecha en Y, luego Izquierda en Z</h4>
+          <p style="font-size:14px;color:var(--text-muted);margin-bottom:16px;">Y es hijo derecho de Z, X es hijo izquierdo de Y</p>
+          <div class="rotation-steps">
+            <div class="tree-diagram" style="margin:0;font-size:12px;text-align:left;">  Z
+ / \
+T1  Y
+   / \
+  X   T4
+ / \
+T2  T3</div>
+            <div class="arrow">→</div>
+            <div class="tree-diagram" style="margin:0;font-size:12px;text-align:left;">(Rot der en Y)
+  Z
+ / \
+T1  X
+   / \
+  T2  Y
+     / \
+    T3  T4</div>
+            <div class="arrow">→</div>
+            <div class="tree-diagram" style="margin:0;font-size:12px;text-align:left;">(Rot izq en Z)
+      X
+     / \
+    Z   Y
+   / \ / \
+  T1 T2 T3 T4</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 6: Los 4 escenarios -->
+      <div class="section-block" id="avl-scenarios">
+        <h2><span class="sec-num">6</span> Los 4 escenarios — Resumen</h2>
+
+        <table class="styled-table">
+          <thead>
+            <tr><th>Caso</th><th>Condición</th><th>Rotación</th><th>Ejemplo (insertar en orden)</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Izq-Izq</strong></td>
+              <td>Y = hijo izq de Z, X = hijo izq de Y</td>
+              <td style="color:var(--green)">Derecha (horaria) en Z</td>
+              <td><span class="inline-code">10, 8, 12, 4, 2</span></td>
+            </tr>
+            <tr>
+              <td><strong>Der-Der</strong></td>
+              <td>Y = hijo der de Z, X = hijo der de Y</td>
+              <td style="color:var(--green)">Izquierda (antihoraria) en Z</td>
+              <td><span class="inline-code">4, 2, 8, 10, 12</span></td>
+            </tr>
+            <tr>
+              <td><strong>Izq-Der</strong></td>
+              <td>Y = hijo izq de Z, X = hijo der de Y</td>
+              <td style="color:var(--yellow)">Izquierda en Y, luego Derecha en Z</td>
+              <td><span class="inline-code">10, 12, 4, 2, 8, 7</span></td>
+            </tr>
+            <tr>
+              <td><strong>Der-Izq</strong></td>
+              <td>Y = hijo der de Z, X = hijo izq de Y</td>
+              <td style="color:var(--yellow)">Derecha en Y, luego Izquierda en Z</td>
+              <td><span class="inline-code">4, 2, 10, 12, 8, 7</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="info-box tip">
+          <div class="box-title">💡 Truco para recordar</div>
+          <p>Si el camino Z→Y→X va en la <strong>misma dirección</strong> (izq-izq o der-der): rotación <strong>simple</strong> en la dirección opuesta. Si va en <strong>direcciones distintas</strong> (izq-der o der-izq): rotación <strong>doble</strong>, primero enderezás el camino y después rotás.</p>
+        </div>
+      </div>
+
+      <!-- SECTION 7: Código -->
+      <div class="section-block" id="avl-code">
+        <h2><span class="sec-num">7</span> Implementación en C/C++</h2>
+
+        <h3>Estructura del nodo</h3>
+        <pre><span class="code-keyword">struct</span> <span class="code-type">NodoAVL</span> {
+    <span class="code-type">int</span> dato;
+    <span class="code-type">NodoAVL</span> *izq;
+    <span class="code-type">NodoAVL</span> *der;
+    <span class="code-type">int</span> altura;
+};</pre>
+
+        <h3>Funciones auxiliares</h3>
+        <pre><span class="code-type">int</span> <span class="code-func">altura</span>(<span class="code-type">NodoAVL</span> *n) {
+    <span class="code-keyword">if</span> (n == <span class="code-keyword">NULL</span>) <span class="code-keyword">return</span> <span class="code-number">-1</span>;
+    <span class="code-keyword">return</span> n->altura;
+}
+
+<span class="code-type">int</span> <span class="code-func">max</span>(<span class="code-type">int</span> a, <span class="code-type">int</span> b) {
+    <span class="code-keyword">return</span> (a > b) ? a : b;
+}
+
+<span class="code-type">int</span> <span class="code-func">balance</span>(<span class="code-type">NodoAVL</span> *n) {
+    <span class="code-keyword">if</span> (n == <span class="code-keyword">NULL</span>) <span class="code-keyword">return</span> <span class="code-number">0</span>;
+    <span class="code-keyword">return</span> altura(n->der) - altura(n->izq);
+}</pre>
+
+        <h3>Rotación a la derecha (horaria)</h3>
+        <pre><span class="code-type">NodoAVL</span>* <span class="code-func">rotarDerecha</span>(<span class="code-type">NodoAVL</span> *z) {
+    <span class="code-type">NodoAVL</span> *y = z->izq;
+    <span class="code-type">NodoAVL</span> *T3 = y->der;
+
+    <span class="code-comment">// Realizar rotación</span>
+    y->der = z;
+    z->izq = T3;
+
+    <span class="code-comment">// Actualizar alturas (primero z, luego y)</span>
+    z->altura = max(altura(z->izq), altura(z->der)) + <span class="code-number">1</span>;
+    y->altura = max(altura(y->izq), altura(y->der)) + <span class="code-number">1</span>;
+
+    <span class="code-keyword">return</span> y; <span class="code-comment">// nueva raíz</span>
+}</pre>
+
+        <h3>Rotación a la izquierda (antihoraria)</h3>
+        <pre><span class="code-type">NodoAVL</span>* <span class="code-func">rotarIzquierda</span>(<span class="code-type">NodoAVL</span> *z) {
+    <span class="code-type">NodoAVL</span> *y = z->der;
+    <span class="code-type">NodoAVL</span> *T2 = y->izq;
+
+    <span class="code-comment">// Realizar rotación</span>
+    y->izq = z;
+    z->der = T2;
+
+    <span class="code-comment">// Actualizar alturas</span>
+    z->altura = max(altura(z->izq), altura(z->der)) + <span class="code-number">1</span>;
+    y->altura = max(altura(y->izq), altura(y->der)) + <span class="code-number">1</span>;
+
+    <span class="code-keyword">return</span> y;
+}</pre>        <h3>Inserción completa</h3>
+        <pre><span class="code-type">NodoAVL</span>* <span class="code-func">insertar</span>(<span class="code-type">NodoAVL</span> *nodo, <span class="code-type">int</span> dato) {
+    <span class="code-comment">// 1. Inserción normal de ABB</span>
+    <span class="code-keyword">if</span> (nodo == <span class="code-keyword">NULL</span>)
+        <span class="code-keyword">return</span> crearNodo(dato);
+
+    <span class="code-keyword">if</span> (dato < nodo->dato)
+        nodo->izq = insertar(nodo->izq, dato);
+    <span class="code-keyword">else if</span> (dato > nodo->dato)
+        nodo->der = insertar(nodo->der, dato);
+    <span class="code-keyword">else</span>
+        <span class="code-keyword">return</span> nodo; <span class="code-comment">// duplicados no permitidos</span>
+
+    <span class="code-comment">// 2. Actualizar altura de este nodo</span>
+    nodo->altura = max(altura(nodo->izq), altura(nodo->der)) + <span class="code-number">1</span>;
+
+    <span class="code-comment">// 3. Calcular factor de balance</span>
+    <span class="code-type">int</span> fb = balance(nodo);
+
+    <span class="code-comment">// 4. Si hay desbalance, aplicar rotación</span>
+
+    <span class="code-comment">// Caso Izq-Izq</span>
+    <span class="code-keyword">if</span> (fb < <span class="code-number">-1</span> && dato < nodo->izq->dato)
+        <span class="code-keyword">return</span> rotarDerecha(nodo);
+
+    <span class="code-comment">// Caso Der-Der</span>
+    <span class="code-keyword">if</span> (fb > <span class="code-number">1</span> && dato > nodo->der->dato)
+        <span class="code-keyword">return</span> rotarIzquierda(nodo);
+
+    <span class="code-comment">// Caso Izq-Der</span>
+    <span class="code-keyword">if</span> (fb < <span class="code-number">-1</span> && dato > nodo->izq->dato) {
+        nodo->izq = rotarIzquierda(nodo->izq);
+        <span class="code-keyword">return</span> rotarDerecha(nodo);
+    }
+
+    <span class="code-comment">// Caso Der-Izq</span>
+    <span class="code-keyword">if</span> (fb > <span class="code-number">1</span> && dato < nodo->der->dato) {
+        nodo->der = rotarDerecha(nodo->der);
+        <span class="code-keyword">return</span> rotarIzquierda(nodo);
+    }
+
+    <span class="code-keyword">return</span> nodo; <span class="code-comment">// sin desbalance</span>
+}</pre>
+
+        <div class="info-box warning">
+          <div class="box-title">⚠️ Errores comunes en parciales</div>
+          <ul>
+            <li>Olvidar actualizar la altura <strong>antes</strong> de chequear el balance</li>
+            <li>Actualizar las alturas en el orden incorrecto dentro de la rotación (primero Z, luego Y)</li>
+            <li>No manejar el caso <span class="inline-code">NULL</span> en la función de altura</li>
+            <li>Invertir el sentido de la resta del factor de balance y no ser consistente</li>
+            <li>Olvidar que <strong>la inserción debe retornar un nodo</strong> porque la raíz puede cambiar</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- SECTION 8: Algoritmo paso a paso -->
+      <div class="section-block" id="avl-algo">
+        <h2><span class="sec-num">8</span> Algoritmo paso a paso</h2>
+
+        <p>Cada vez que insertás un nodo, este es el proceso completo:</p>
+
+        <div class="algo-steps">
+          <div class="algo-step">
+            <p><strong>Insertar el nodo</strong> — Usás la misma lógica de inserción de un ABB (bajar por izquierda o derecha según la comparación)</p>
+          </div>
+          <div class="algo-step">
+            <p><strong>Calcular la altura</strong> — Al volver de la recursión, actualizás la altura de cada nodo en el camino: <span class="inline-code">max(alt_izq, alt_der) + 1</span></p>
+          </div>
+          <div class="algo-step">
+            <p><strong>Verificar el balance</strong> — Calculás <span class="inline-code">FB = alt_der - alt_izq</span>. Si |FB| > 1, hay desbalance</p>
+          </div>
+          <div class="algo-step">
+            <p><strong>Identificar el caso</strong> — Determinás si es Izq-Izq, Der-Der, Izq-Der o Der-Izq mirando la relación entre Z, Y y X</p>
+          </div>
+          <div class="algo-step">
+            <p><strong>Aplicar la rotación</strong> — Ejecutás la rotación correspondiente (simple o doble)</p>
+          </div>
+          <div class="algo-step">
+            <p><strong>Recalcular alturas</strong> — Dentro de la rotación, actualizás las alturas de los nodos involucrados (primero el que baja, luego el que sube)</p>
+          </div>
+        </div>
+
+        <div class="info-box important">
+          <div class="box-title">🔑 Concepto clave: recursión no tail-recursive</div>
+          <p>La inserción en un ABB común puede ser tail-recursive (no hace nada después de la llamada recursiva). En un AVL, <strong>necesitás ejecutar tareas al volver</strong> de la recursión (actualizar alturas y chequear balance), por lo que la función NO es tail-recursive. Esto es lo que permite detectar desbalances en el camino de vuelta.</p>
+        </div>
+      </div>      <!-- ═══════════════════════════════════════════ -->
+      <!-- ROTATION LAB                               -->
+      <!-- ═══════════════════════════════════════════ -->
+      <div class="section-block" id="avl-rot-lab">
+        <h2><span class="sec-num">🔬</span> Laboratorio de Rotaciones</h2>
+        <p style="margin-bottom:8px;">Avanzá paso a paso por cada rotación. Mirá exactamente qué punteros cambian y cómo se mueven los nodos.</p>
+
+        <div class="rot-lab">
+          <div class="rot-lab-tabs">
+            <button class="rot-lab-tab active" onclick="selectRotTab(0)">Izq-Izq<br><span style="font-size:11px;font-weight:400;color:var(--text-dim)">Rot. Derecha</span></button>
+            <button class="rot-lab-tab" onclick="selectRotTab(1)">Der-Der<br><span style="font-size:11px;font-weight:400;color:var(--text-dim)">Rot. Izquierda</span></button>
+            <button class="rot-lab-tab" onclick="selectRotTab(2)">Izq-Der<br><span style="font-size:11px;font-weight:400;color:var(--text-dim)">Doble</span></button>
+            <button class="rot-lab-tab" onclick="selectRotTab(3)">Der-Izq<br><span style="font-size:11px;font-weight:400;color:var(--text-dim)">Doble</span></button>
+          </div>
+          <div class="rot-lab-content">
+            <div class="rot-lab-canvas-wrap">
+              <canvas id="rot-canvas" height="310"></canvas>
+            </div>
+            <div class="rot-lab-controls">
+              <button class="step-btn" id="rot-prev" onclick="rotStep(-1)">← Anterior</button>
+              <button class="step-btn primary" id="rot-next" onclick="rotStep(1)">Siguiente →</button>
+              <button class="step-btn" onclick="rotReset()">↺ Reiniciar</button>
+              <div class="step-indicator" id="rot-dots"></div>
+            </div>
+            <div class="step-narration" id="rot-narration"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════ -->
+      <!-- CODE-LINKED VISUALIZER                      -->
+      <!-- ═══════════════════════════════════════════ -->
+      <div class="section-block" id="avl-code-viz">
+        <h2><span class="sec-num">🖱️</span> Código Interactivo — Hacé clic y mirá</h2>
+        <p style="margin-bottom:16px;">Elegí una rotación y hacé clic en cada línea de código para ver cómo afecta al árbol en tiempo real.</p>
+
+        <!-- Tabs for rotation type -->
+        <div class="rot-lab-tabs" id="code-viz-tabs" style="border-radius:12px 12px 0 0;overflow:hidden;border:1px solid var(--border);border-bottom:none;">
+          <button class="rot-lab-tab active" onclick="selectCodeVizTab(0)">Rot. Derecha<br><span style="font-size:10px;font-weight:400;color:var(--text-dim)">Izq-Izq</span></button>
+          <button class="rot-lab-tab" onclick="selectCodeVizTab(1)">Rot. Izquierda<br><span style="font-size:10px;font-weight:400;color:var(--text-dim)">Der-Der</span></button>
+          <button class="rot-lab-tab" onclick="selectCodeVizTab(2)">Doble Izq-Der<br><span style="font-size:10px;font-weight:400;color:var(--text-dim)">2 pasos</span></button>
+          <button class="rot-lab-tab" onclick="selectCodeVizTab(3)">Doble Der-Izq<br><span style="font-size:10px;font-weight:400;color:var(--text-dim)">2 pasos</span></button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px;padding-top:16px;border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;padding:16px;" id="code-viz-grid">
+          <!-- Code panel -->
+          <div style="background:var(--bg-code);border:1px solid var(--border);border-radius:12px;padding:0;overflow:hidden;">
+            <div style="padding:10px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;">
+              <span id="code-viz-title">rotarDerecha(z) — Hacé clic en cada línea</span>
+              <button class="step-btn" style="padding:4px 10px;font-size:11px;" onclick="resetCodeViz()">↺ Reset</button>
+            </div>
+            <div id="code-viz-lines" style="padding:8px 0;"></div>
+          </div>
+          <!-- Tree panel -->
+          <div style="background:var(--bg-code);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+            <div style="padding:10px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Estado del árbol</div>
+            <canvas id="code-viz-canvas" height="280" style="width:100%;display:block;"></canvas>
+          </div>
+        </div>
+        <div class="step-narration" id="code-viz-narration">Hacé clic en la primera línea de código para comenzar.</div>
+      </div>      <!-- ═══════════════════════════════════════════ -->
+      <!-- BALANCE CHECKER                             -->
+      <!-- ═══════════════════════════════════════════ -->
+      <div class="section-block" id="avl-balance-check">
+        <h2><span class="sec-num">⚖️</span> Checker de Balance Interactivo</h2>
+        <p style="margin-bottom:8px;">Escribí una secuencia de inserciones y mirá el factor de balance de cada nodo. Te marca en rojo los desbalanceados e identifica qué rotación necesita.</p>
+
+        <div class="balance-checker">
+          <div class="bc-input-row">
+            <input type="text" id="bc-input" placeholder="Ej: 30, 20, 40, 10, 25, 5" onkeydown="if(event.key==='Enter')buildBCTree()">
+            <button class="avl-btn" onclick="buildBCTree()">Construir (sin rotar)</button>
+            <button class="avl-btn secondary" onclick="buildBCTreeAVL()">Construir AVL (con rotaciones)</button>
+          </div>
+          <div class="bc-result">
+            <canvas id="bc-canvas" height="300"></canvas>
+            <div class="bc-fb-table" id="bc-fb-output">Ingresá valores separados por coma y hacé clic en "Construir".</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: Interactive AVL -->
+      <div class="section-block" id="avl-interactive">
+        <h2><span class="sec-num">⚡</span> AVL Interactivo</h2>
+        <p>Insertá nodos y mirá cómo el árbol se balancea automáticamente.</p>
+
+        <div class="avl-interactive">
+          <h4>Simulador de AVL</h4>
+          <div class="avl-controls">
+            <input type="number" id="avl-input" placeholder="Valor..." onkeydown="if(event.key==='Enter')insertAVL()">
+            <button class="avl-btn" onclick="insertAVL()">Insertar</button>
+            <button class="avl-btn secondary" onclick="resetAVL()">Reiniciar</button>
+          </div>
+          <div id="avl-log" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted);margin-bottom:12px;min-height:20px;"></div>
+          <canvas id="avl-canvas" height="300"></canvas>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════ -->
+      <!-- EXERCISES                                   -->
+      <!-- ═══════════════════════════════════════════ -->
+      <div class="section-block" id="avl-exercises">
+        <h2><span class="sec-num">✏️</span> Ejercicios</h2>
+        <p style="margin-bottom:24px;">Resolvé cada ejercicio en el espacio dado. Cuando termines, hacé clic en "Mostrar respuesta" para verificar.</p>
+
+        <!-- EX 1 -->
+        <div class="exercise-block">
+          <div class="ex-header">
+            <span class="ex-number">Ejercicio 1</span>
+            <span class="difficulty easy">Fácil</span>
+          </div>
+          <div class="ex-question">Dado un árbol vacío, insertá los siguientes valores en orden: <span class="inline-code">10, 20, 30</span>. Dibujá el árbol resultante después de cada inserción, indicando cuándo se produce una rotación y de qué tipo.</div>
+          <textarea placeholder="Escribí tu respuesta acá..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>Después de insertar 10 y 20, no hay desbalance. Al insertar 30, el nodo 10 tiene FB = 2 (desbalance derecha). Es caso Der-Der → rotación a la izquierda.</p>
+            <div class="tree-diagram" style="font-size:13px;text-align:left;">Paso 1: 10        Paso 2: 10         Paso 3 (antes):  10        Paso 3 (después):  20
+                              \                            \                      / \
+                              20                           20                   10   30
+                                                             \
+                                                             30
+                                                      FB(10)=2 → Rot. Izq</div>
+          </div>
+        </div>
+
+        <!-- EX 2 -->
+        <div class="exercise-block">
+          <div class="ex-header">
+            <span class="ex-number">Ejercicio 2</span>
+            <span class="difficulty easy">Fácil</span>
+          </div>
+          <div class="ex-question">¿Cuál es el factor de balance de cada nodo en el siguiente árbol? ¿Es un AVL válido?
+            <div class="tree-diagram" style="font-size:13px;text-align:left;margin-top:10px;">        15
+       / \
+      10   20
+     /    / \
+    5   17   25
+   /
+  2</div>
+          </div>
+          <textarea placeholder="Escribí el FB de cada nodo..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>FB(2)=0, FB(5)=-1, FB(10)=-2, FB(17)=0, FB(25)=0, FB(20)=0, FB(15)=-1.</p>
+            <p><strong>No es un AVL válido</strong> porque el nodo 10 tiene FB = -2 (|FB| > 1).</p>
+          </div>
+        </div>        <!-- EX 3 -->
+        <div class="exercise-block">
+          <div class="ex-header">
+            <span class="ex-number">Ejercicio 3</span>
+            <span class="difficulty medium">Medio</span>
+          </div>
+          <div class="ex-question">Insertá los siguientes valores en un AVL vacío: <span class="inline-code">50, 25, 75, 10, 30, 27</span>. Mostrá el árbol después de cada inserción e indicá todas las rotaciones que ocurren (tipo y nodos involucrados Z, Y, X).</div>
+          <textarea style="min-height:120px;" placeholder="Dibujá el árbol paso a paso..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>Inserciones 50, 25, 75, 10, 30: sin rotaciones necesarias.</p>
+            <p>Al insertar 27: el nodo 50 tiene FB = -2. Z=50, Y=25, X=30. Pero 27 < 30, así que el camino es izq-der → <strong>Rotación doble: Izquierda en Y(25), Derecha en Z(50)</strong>.</p>
+            <div class="tree-diagram" style="font-size:13px;text-align:left;">Antes de rotar:      Después:
+        50                  30
+       / \                /    \
+      25  75             25     50
+     / \                / \    / \
+    10  30             10  27 --  75
+       /
+      27</div>
+          </div>
+        </div>
+
+        <!-- EX 4 -->
+        <div class="exercise-block">
+          <div class="ex-header">
+            <span class="ex-number">Ejercicio 4</span>
+            <span class="difficulty medium">Medio</span>
+          </div>
+          <div class="ex-question">Completá la función <span class="inline-code">rotarDerecha</span> en C. Escribí toda la función de memoria sin mirar las notas.</div>
+          <textarea style="min-height:140px;" placeholder="NodoAVL* rotarDerecha(NodoAVL* z) {&#10;    ...&#10;}"></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <pre><span class="code-type">NodoAVL</span>* <span class="code-func">rotarDerecha</span>(<span class="code-type">NodoAVL</span> *z) {
+    <span class="code-type">NodoAVL</span> *y = z->izq;
+    <span class="code-type">NodoAVL</span> *T3 = y->der;
+
+    y->der = z;
+    z->izq = T3;
+
+    z->altura = max(altura(z->izq), altura(z->der)) + <span class="code-number">1</span>;
+    y->altura = max(altura(y->izq), altura(y->der)) + <span class="code-number">1</span>;
+
+    <span class="code-keyword">return</span> y;
+}</pre>
+          </div>
+        </div>
+
+        <!-- EX 5 -->
+        <div class="exercise-block">
+          <div class="ex-header">
+            <span class="ex-number">Ejercicio 5</span>
+            <span class="difficulty medium">Medio</span>
+          </div>
+          <div class="ex-question">Explicá con tus palabras: ¿por qué la inserción en un AVL no puede ser <em>tail-recursive</em>? ¿Qué operaciones se ejecutan "a la vuelta" de la recursión?</div>
+          <textarea placeholder="Explicá el concepto..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>En un ABB simple, la inserción puede ser tail-recursive porque después de insertar no hay más trabajo. En un AVL, al volver de cada llamada recursiva hay que: (1) actualizar la altura del nodo actual, (2) calcular el factor de balance, (3) si hay desbalance, aplicar la rotación correspondiente. Estas operaciones post-recursivas impiden que sea tail-recursive.</p>
+          </div>
+        </div>
+
+        <!-- EX 6 -->
+        <div class="exercise-block">
+          <div class="ex-header">
+            <span class="ex-number">Ejercicio 6</span>
+            <span class="difficulty hard">Difícil</span>
+          </div>
+          <div class="ex-question">Insertá los siguientes valores en un AVL vacío: <span class="inline-code">40, 20, 60, 10, 30, 50, 70, 5, 15, 25, 35, 55, 65, 75, 3</span>. Dibujá el árbol final e indicá <strong>todas</strong> las rotaciones que se produjeron en el proceso.</div>
+          <textarea style="min-height:150px;" placeholder="Dibujá paso a paso..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>Las primeras 14 inserciones (40 a 75) producen un árbol perfectamente balanceado, sin rotaciones. Al insertar 3: el nodo 10 obtiene FB = -2 (Z=10, Y=5, X=3, caso Izq-Izq) → rotación derecha en 10.</p>
+            <div class="tree-diagram" style="font-size:13px;text-align:left;">                40
+            /        \
+          20          60
+        /    \      /    \
+       5     30    50     70
+      / \   / \    \     / \
+     3  10 25 35   55   65  75
+        /
+       15        (Nota: 15 queda como hijo izq de 10 luego de la rotación que subió a 5)</div>
+            <p style="margin-top:8px;font-size:13px;color:var(--text-muted);">Este ejercicio es deliberadamente largo. Si lo resolviste bien, estás muy bien preparado. Verificá tu resultado insertando los valores en un visualizador online.</p>
+          </div>
+        </div>
+
+        <!-- EX 7 -->
+        <div class="exercise-block">
+          <div class="ex-header">
+            <span class="ex-number">Ejercicio 7</span>
+            <span class="difficulty hard">Difícil</span>
+          </div>
+          <div class="ex-question">Escribí la función <span class="inline-code">insertar</span> completa en C para un AVL, incluyendo los 4 casos de rotación. Hacelo de memoria.</div>
+          <textarea style="min-height:200px;" placeholder="NodoAVL* insertar(NodoAVL* nodo, int dato) {&#10;    ...&#10;}"></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>Compará tu solución con el código de la Sección 7. Los puntos clave que debe tener:</p>
+            <ul>
+              <li>Caso base: retornar nodo nuevo si NULL</li>
+              <li>Inserción recursiva por izq o der</li>
+              <li>Actualización de altura ANTES de chequear balance</li>
+              <li>Cálculo del FB</li>
+              <li>4 condiciones: Izq-Izq, Der-Der, Izq-Der, Der-Izq</li>
+              <li>Retorno del nodo (la raíz puede cambiar)</li>
+            </ul>
+          </div>
+        </div>        <!-- EX 8 -->
+        <div class="exercise-block">
+          <div class="ex-header">
+            <span class="ex-number">Ejercicio 8</span>
+            <span class="difficulty easy">Fácil</span>
+          </div>
+          <div class="ex-question">Verdadero o Falso. Justificá brevemente cada respuesta:
+            <ol style="margin-top:10px;">
+              <li>Todo AVL es un ABB.</li>
+              <li>Todo ABB es un AVL.</li>
+              <li>Un AVL con n nodos siempre tiene altura exactamente log₂(n).</li>
+              <li>Insertar en un AVL puede requerir más de 2 rotaciones simples.</li>
+              <li>El árbol vacío es un AVL.</li>
+            </ol>
+          </div>
+          <textarea style="min-height:120px;" placeholder="1. V/F porque...&#10;2. V/F porque...&#10;3. V/F porque...&#10;4. V/F porque...&#10;5. V/F porque..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <ol>
+              <li><strong>Verdadero</strong> — Un AVL cumple todas las propiedades de un ABB más la condición de balance.</li>
+              <li><strong>Falso</strong> — Un ABB puede estar sesgado (no cumplir |h_izq - h_der| ≤ 1).</li>
+              <li><strong>Falso</strong> — La altura es O(log n), pero no es exactamente log₂(n). Es ≤ 1.44 * log₂(n+2).</li>
+              <li><strong>Falso</strong> — Una inserción requiere a lo sumo una rotación doble (equivalente a 2 rotaciones simples).</li>
+              <li><strong>Verdadero</strong> — Por definición (caso base de la definición recursiva).</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- EX 9 -->
+        <div class="exercise-block">
+          <div class="ex-header">
+            <span class="ex-number">Ejercicio 9</span>
+            <span class="difficulty medium">Medio</span>
+          </div>
+          <div class="ex-question">Dado el siguiente código incompleto de la función <span class="inline-code">balance</span>, encontrá el bug y explicá qué problema causaría:
+            <pre style="margin-top:10px;">int balance(NodoAVL *n) {
+    return altura(n->der) - altura(n->izq);
+}</pre>
+          </div>
+          <textarea placeholder="¿Cuál es el problema? ¿Qué pasaría?"></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>Falta verificar si <span class="inline-code">n == NULL</span>. Si se llama con un nodo NULL, se produce un <strong>acceso a memoria inválido</strong> (segfault) al intentar acceder a <span class="inline-code">n->der</span> y <span class="inline-code">n->izq</span>. La corrección es agregar <span class="inline-code">if (n == NULL) return 0;</span> al principio.</p>
+          </div>
+        </div>
+
+        <!-- EX 10 -->
+        <div class="exercise-block">
+          <div class="ex-header">
+            <span class="ex-number">Ejercicio 10</span>
+            <span class="difficulty hard">Difícil</span>
+          </div>
+          <div class="ex-question">Diseñá un caso en el que insertar un solo valor en un AVL produzca una rotación <strong>doble</strong> (Izq-Der o Der-Izq). Mostrá el árbol antes de la inserción (que sea un AVL válido), el valor que insertás, y el resultado después de la rotación.</div>
+          <textarea style="min-height:120px;" placeholder="AVL antes de insertar:&#10;&#10;Valor insertado:&#10;&#10;Rotación aplicada:&#10;&#10;AVL después:"></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>Un ejemplo sencillo:</p>
+            <div class="tree-diagram" style="font-size:13px;text-align:left;">AVL válido:     Insertar 25:       Después de rot Izq-Der:
+    30              30                    25
+   /               /                    /  \
+  20              20                   20    30
+                    \
+                    25
+            FB(30)=-2, Z=30, Y=20, X=25
+            Caso Izq-Der → Rot izq(20), rot der(30)</div>
+          </div>
+        </div>
+
+      </div>
+      <!-- END EXERCISES -->
+
+    </div>
+    <!-- END TOPIC AVL -->
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- TOPIC: HASH TABLES                          -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="topic-section" id="topic-hash">
+      <div class="topic-header-badge">📅 Clase 2 — 18 de marzo 2026</div>
+
+      <!-- SECTION 1: Intro -->
+      <div class="section-block" id="hash-intro">
+        <h2><span class="sec-num">1</span> Tabla vs. Tabla de Hash</h2>
+        <p>Primero hay que distinguir dos cosas que suenan parecidas pero son diferentes:</p>
+
+        <div class="comparison-grid">
+          <div class="comp-card">
+            <h4>📋 Tabla (TAD)</h4>
+            <p style="font-size:14px;color:var(--text-muted);">Tipo abstracto de datos. Define <em>qué</em> puede hacer, no <em>cómo</em>. Asocia una <strong>clave</strong> a un <strong>valor</strong>. Sus operaciones son:</p>
+            <ul style="font-size:14px;margin-top:8px;">
+              <li><strong>Búsqueda:</strong> dada una clave → retorna el valor</li>
+              <li><strong>Insertar:</strong> dada clave + valor → inserta</li>
+              <li><strong>Eliminar:</strong> dada una clave → elimina el valor</li>
+            </ul>
+            <p style="font-size:13px;color:var(--text-dim);margin-top:8px;">📗 Las claves deben ser únicas.</p>
+          </div>
+          <div class="comp-card">
+            <h4>#️⃣ Tabla de Hash (Estructura)</h4>
+            <p style="font-size:14px;color:var(--text-muted);">Una <em>implementación</em> del TAD Tabla. Define <em>cómo</em> lo hace. Su superpoder:</p>
+            <ul style="font-size:14px;margin-top:8px;">
+              <li><strong>Búsqueda:</strong> <span style="color:var(--green)">O(1)</span></li>
+              <li><strong>Insertar:</strong> <span style="color:var(--green)">O(1)</span></li>
+              <li><strong>Eliminar:</strong> <span style="color:var(--green)">O(1)</span></li>
+            </ul>
+            <p style="font-size:13px;color:var(--text-dim);margin-top:8px;">📘 Los elementos NO necesitan un orden definido. A diferencia de ABB/AVL.</p>
+          </div>
+        </div>        <div class="info-box important">
+          <div class="box-title">🎯 La gran diferencia con AVL</div>
+          <p>En un AVL los elementos deben tener una <strong>relación de orden</strong> (comparables con &lt; y &gt;). En una tabla de hash <strong>no importa el orden</strong> — solo necesitás una función de hash para la clave. La tabla de hash te da O(1), el AVL te da O(log n). Pero el AVL te permite listar ordenado, buscar el mínimo/máximo, etc. La tabla de hash no.</p>
+        </div>
+      </div>
+
+      <!-- SECTION 2: Vocabulary -->
+      <div class="section-block" id="hash-vocab">
+        <h2><span class="sec-num">2</span> Vocabulario esencial</h2>
+
+        <table class="styled-table">
+          <thead><tr><th>Término</th><th>Qué es</th></tr></thead>
+          <tbody>
+            <tr><td><strong>La tabla</strong></td><td>Un <strong>array</strong> que contiene los elementos. La estructura subyacente es simplemente un arreglo.</td></tr>
+            <tr><td><strong>Buckets 🪣</strong></td><td>Cada celda del array. Cada bucket puede contener un elemento (hash cerrado) o una lista de elementos (hash abierto).</td></tr>
+            <tr><td><strong>Función de hash</strong></td><td>La función que convierte una clave (ej: un string) en un índice del array. Es el corazón de toda tabla de hash.</td></tr>
+            <tr><td><strong>Factor de carga (λ)</strong></td><td>λ = N / B donde N = cantidad de elementos, B = cantidad de buckets. Mide qué tan "llena" está la tabla.</td></tr>
+            <tr><td><strong>Colisión 💢</strong></td><td>Cuando dos claves distintas producen el mismo índice (el mismo bucket). Es lo que queremos evitar.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECTION 3: Hash function -->
+      <div class="section-block" id="hash-function">
+        <h2><span class="sec-num">3</span> La función de hash</h2>
+        <p>La función de hash toma la clave y la convierte en un número entero que se usa como índice del array.</p>
+
+        <div class="info-box definition">
+          <div class="box-title">📐 Índice final</div>
+          <p>El índice nunca puede ser mayor que el tamaño del array, así que siempre hacemos:</p>
+          <pre style="margin-top:8px;font-size:13px;">index = hash(key) % cantidadDeBuckets</pre>
+        </div>
+
+        <h3>Características obligatorias</h3>
+        <ul>
+          <li><strong>Convierte la clave a un entero</strong> — puede tomar un string, un objeto, lo que sea</li>
+          <li><strong>Determinista</strong> — para la misma clave, <em>siempre</em> retorna el mismo valor. Sin aleatoriedad.</li>
+        </ul>
+
+        <h3>Características de una buena función de hash ✅</h3>
+        <ul>
+          <li><strong>Evitar colisiones 💢</strong> — distribuir los elementos lo más uniformemente posible entre los buckets</li>
+          <li><strong>O(1) en tiempo</strong> — calcularla debe ser rápido, si no pierde sentido toda la estructura</li>
+          <li><strong>Efecto avalancha 🏔️</strong> — un pequeño cambio en la clave produce un resultado completamente distinto</li>
+        </ul>
+
+        <h3>Las 3 funciones del profesor — comparadas</h3>
+        <pre><span class="code-comment">// Hash 1: suma simple de caracteres (débil — "abc" == "bca" == "cab")</span>
+<span class="code-type">int</span> <span class="code-func">hash1</span>(<span class="code-type">string</span> key) {
+    <span class="code-type">int</span> h = <span class="code-number">0</span>;
+    <span class="code-keyword">for</span> (<span class="code-type">int</span> i = <span class="code-number">0</span>; i < key.length(); i++)
+        h = h + key[i];
+    <span class="code-keyword">return</span> h;
+}
+
+<span class="code-comment">// Hash 2: suma ponderada por posición (mejor — diferencia orden)</span>
+<span class="code-type">int</span> <span class="code-func">hash2</span>(<span class="code-type">string</span> key) {
+    <span class="code-type">int</span> h = <span class="code-number">0</span>;
+    <span class="code-keyword">for</span> (<span class="code-type">int</span> i = <span class="code-number">0</span>; i < key.length(); i++)
+        h = h + key[i] * (i + <span class="code-number">1</span>);
+    <span class="code-keyword">return</span> h;
+}
+
+<span class="code-comment">// Hash 3: multiplicación por primo (buena distribución — efecto avalancha)</span>
+<span class="code-type">int</span> <span class="code-func">hash3</span>(<span class="code-type">string</span> key) {
+    <span class="code-type">int</span> h = <span class="code-number">0</span>;
+    <span class="code-keyword">for</span> (<span class="code-type">int</span> i = <span class="code-number">0</span>; i < key.length(); i++)
+        h = <span class="code-number">31</span> * h + <span class="code-type">int</span>(key[i]);
+    <span class="code-keyword">return</span> h;
+}</pre>
+
+        <div class="info-box warning">
+          <div class="box-title">⚠️ El problema de hash1</div>
+          <p><span class="inline-code">hash1("abc") == hash1("bca") == hash1("cab")</span> — todas dan el mismo resultado porque solo suma. <strong>hash3 con el primo 31</strong> es la base de la función hash de Java para strings (<span class="inline-code">String.hashCode()</span>) porque produce mejor distribución y efecto avalancha.</p>
+        </div>
+
+        <div class="info-box tip">
+          <div class="box-title">💡 ¿Existe la función de hash perfecta?</div>
+          <p>Sí, pero solo cuando conocés de antemano <em>todos</em> los elementos que vas a guardar (se llama <strong>perfect hashing</strong>). En la práctica general, no existe. Siempre hay posibilidad de colisión.</p>
+        </div>
+      </div>
+
+      <!-- SECTION 4: Collisions -->
+      <div class="section-block" id="hash-collisions">
+        <h2><span class="sec-num">4</span> Colisiones 💢</h2>
+        <p>Una colisión ocurre cuando dos claves distintas producen el mismo índice:</p>
+        <pre>hash("abc") % 10 == 5
+hash("xyz") % 10 == 5   ← ¡colisión!</pre>
+
+        <h3>¿De qué depende la cantidad de colisiones?</h3>
+        <ul>
+          <li><strong>Calidad de la función de hash</strong> — a mayor distribución, menos colisiones</li>
+          <li><strong>Factor de carga (λ)</strong> — tabla más llena = más colisiones</li>
+        </ul>
+
+        <div class="info-box important">
+          <div class="box-title">🎯 ¿Por qué las colisiones son tan malas?</div>
+          <p>Cuando hay colisión, las operaciones dejan de ser O(1). En el peor caso, si <em>todo</em> colisiona en el mismo bucket, buscar es O(n). <strong>La tabla de hash pierde todo su atractivo.</strong></p>
+          <p style="margin-top:8px;">Ejemplo conceptual: la <strong>paradoja del cumpleaños</strong> — con solo 23 personas en un cuarto, la probabilidad de que dos compartan cumpleaños es >50%. Con funciones hash pasa algo similar: los buckets se "llenan" antes de lo esperado.</p>
+        </div>
+      </div>      <!-- SECTION 5: Open Hash -->
+      <div class="section-block" id="hash-open">
+        <h2><span class="sec-num">5</span> Hash Abierto (Separate Chaining)</h2>
+        <p>Cada bucket contiene una <strong>lista enlazada</strong>. Cuando hay colisión, el nuevo elemento se agrega a la lista del bucket correspondiente.</p>
+
+        <div class="tree-diagram" style="text-align:left;font-size:13px;">Bucket 0: [ ] → null
+Bucket 1: [ ] → ("banana", 2) → null
+Bucket 2: [ ] → ("apple", 5) → ("grape", 1) → null   ← colisión, ambas en bucket 2
+Bucket 3: [ ] → null
+Bucket 4: [ ] → ("mango", 3) → null</div>
+
+        <h3>Ventajas del hash abierto</h3>
+        <ul>
+          <li>Fácil de implementar</li>
+          <li>El λ <strong>puede ser mayor a 1</strong> (más elementos que buckets) — nunca está "lleno"</li>
+          <li>Menos sensible a la calidad de la función de hash</li>
+          <li>Eliminación simple — solo removés de la lista</li>
+        </ul>
+
+        <div class="info-box tip">
+          <div class="box-title">💡 Complejidad con hash abierto</div>
+          <p>En promedio O(1 + λ). Si λ es bajo (ej: 0.75), es prácticamente O(1). Si λ es alto (ej: 5), cada búsqueda recorre en promedio 5 nodos → se degrada.</p>
+        </div>
+      </div>
+
+      <!-- SECTION 6: Closed Hash -->
+      <div class="section-block" id="hash-closed">
+        <h2><span class="sec-num">6</span> Hash Cerrado (Open Addressing)</h2>
+        <p>Todos los elementos viven <strong>dentro del array</strong>. Cuando hay colisión, se busca el siguiente bucket disponible mediante una técnica de <em>probing</em>.</p>
+
+        <div class="info-box warning">
+          <div class="box-title">⚠️ Restricciones del hash cerrado</div>
+          <ul>
+            <li>λ <strong>nunca puede ser mayor a 1</strong> — si la tabla está llena, no podés insertar</li>
+            <li>La eliminación es más complicada (no podés simplemente borrar — rompe las cadenas de probing)</li>
+            <li>Debés detectar <strong>loops infinitos</strong> en el probing</li>
+            <li>Se aconseja usar <strong>números primos</strong> para el tamaño de la tabla</li>
+          </ul>
+        </div>
+
+        <h3>Los 3 tipos de probing</h3>
+
+        <div class="rotation-card">
+          <h4><span class="rot-badge">Lineal</span> Probing Lineal</h4>
+          <pre>index(key, i) = (h(key) + i) % B</pre>
+          <p style="font-size:14px;color:var(--text-muted);">Prueba el siguiente bucket, luego el siguiente, etc. Produce <strong>clustering primario</strong> — los elementos se agrupan en zonas, empeorando con el tiempo.</p>
+        </div>
+
+        <div class="rotation-card">
+          <h4><span class="rot-badge">Cuadrático</span> Probing Cuadrático</h4>
+          <pre>index(key, i) = (h(key) + i²) % B</pre>
+          <p style="font-size:14px;color:var(--text-muted);">Salta más lejos con cada intento. Evita clustering primario pero produce <strong>clustering secundario</strong> — misma secuencia para claves que mapean al mismo bucket.</p>
+        </div>
+
+        <div class="rotation-card">
+          <h4><span class="rot-badge">Doble Hash</span> Double Hashing</h4>
+          <pre>index(key, i) = (h(key) + i * h2(key)) % B</pre>
+          <p style="font-size:14px;color:var(--text-muted);">Usa una segunda función de hash para el salto. La mejor distribución de los tres. Evita ambos tipos de clustering.</p>
+        </div>
+
+        <pre><span class="code-type">int</span> <span class="code-func">calculateIndex</span>(K key, <span class="code-type">unsigned int</span> tryCount) {
+    <span class="code-keyword">if</span> (type == LINEAR_PROBING)
+        <span class="code-keyword">return</span> abs(hashFunction(key) + tryCount) % buckets;
+    <span class="code-keyword">else if</span> (type == QUADRATIC_PROBING)
+        <span class="code-keyword">return</span> abs(hashFunction(key) + pow(tryCount, <span class="code-number">2</span>)) % buckets;
+    <span class="code-keyword">else if</span> (type == DOUBLE_HASHING)
+        <span class="code-keyword">return</span> abs(hashFunction(key) + tryCount * hashFunction2(key)) % buckets;
+}
+<span class="code-comment">// Nota: tryCount (i) es el número de intento (0, 1, 2, ...)</span></pre>
+
+        <h3>Hash Abierto vs. Hash Cerrado</h3>
+        <table class="styled-table">
+          <thead><tr><th></th><th>Hash Abierto</th><th>Hash Cerrado</th></tr></thead>
+          <tbody>
+            <tr><td>Implementación</td><td style="color:var(--green)">Más simple</td><td style="color:var(--yellow)">Mayor cuidado</td></tr>
+            <tr><td>Factor de carga λ</td><td style="color:var(--green)">Puede ser &gt; 1</td><td style="color:var(--red)">Siempre &lt; 1</td></tr>
+            <tr><td>Tabla "llena"</td><td style="color:var(--green)">Nunca</td><td style="color:var(--red)">Sí, hay que manejar</td></tr>
+            <tr><td>Eliminación</td><td style="color:var(--green)">Fácil</td><td style="color:var(--red)">Complicada</td></tr>
+            <tr><td>Sensibilidad a hash y λ</td><td style="color:var(--green)">Menos sensible</td><td style="color:var(--red)">Más sensible</td></tr>
+          </tbody>
+        </table>
+      </div>
