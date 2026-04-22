@@ -1044,6 +1044,12 @@
     <a class="nav-link sub-nav" onclick="scrollToSection('grafos-resumen')">
       <span class="nav-icon">12</span> Resumen Algoritmos
     </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('grafos-parcial')">
+      <span class="nav-icon">13</span> Tips de Parcial
+    </a>
+    <a class="nav-link sub-nav" onclick="scrollToSection('grafos-ejercicios-parcial')">
+      <span class="nav-icon">14</span> Ejercicios Parcial
+    </a>
   </div>
   <div class="nav-section" style="margin-top:0;display:none;" id="sidenav-obligatorio">
     <div class="nav-section-title">Obligatorio — Secciones</div>
@@ -5353,6 +5359,11 @@ Con matriz de adyacencia:
           </div>
         </div>
 
+        <div class="info-box tip" style="margin-top:12px;">
+          <div class="box-title">💡 Para recordar</div>
+          <p><strong>BFS = ondas en el agua.</strong> Tirás una piedra (el origen) y las ondas se expanden nivel por nivel. Primero los que están a distancia 1, después 2, después 3. Por eso encuentra el camino más corto en grafos no ponderados.</p>
+        </div>
+
         <div class="notebook-box">
           <div class="nb-title">Sección 4 — BFS</div>
           <span class="nb-key"><strong>Estructura:</strong> Cola (FIFO). Primero los vecinos, después los vecinos de los vecinos.</span>
@@ -5434,6 +5445,11 @@ Con matriz de adyacencia:
             </table>
           </div>
           <p style="font-size:13px;color:var(--text-muted);">En el parcial, si el problema NO pide camino más corto, usá DFS. Es más rápido de escribir y menos propenso a errores.</p>
+        </div>
+
+        <div class="info-box tip" style="margin-top:12px;">
+          <div class="box-title">💡 Para recordar</div>
+          <p><strong>DFS = laberinto.</strong> Siempre girás a la izquierda hasta chocar con una pared, después retrocedés y probás otro camino. En el parcial, DFS es tu mejor amigo: <strong>5 líneas recursivas</strong> vs 15 iterativas con cola. Menos código = menos errores = más tiempo para pensar.</p>
         </div>
 
         <div class="notebook-box">
@@ -5566,6 +5582,11 @@ Si sacamos el nodo 5:
         <div class="info-box warning">
           <div class="box-title">⚠️ Complejidad</div>
           <p><strong>O(V × (V+A))</strong> — para cada uno de los V vértices, hacemos un DFS completo O(V+A). No es óptimo (existe un algoritmo O(V+A) con DFS y números de descubrimiento), pero es simple de escribir en un parcial y el profesor validó este enfoque en clase.</p>
+        </div>
+
+        <div class="info-box tip" style="margin-top:12px;">
+          <div class="box-title">💡 Para recordar</div>
+          <p><strong>Punto de articulación = el amigo que si se va de la fiesta, se arman dos fiestas separadas.</strong> Si lo sacás, el grafo se parte. Para encontrarlo: cantConexas con <code>visitado[candidato]=true</code> — una sola línea extra.</p>
         </div>
 
         <div class="notebook-box">
@@ -5740,6 +5761,11 @@ el nodo 5 está listo para ser procesado.</div>
         <div class="info-box important" style="margin-top:12px;">
           <div class="box-title">🚨 Diferencia clave con BFS/DFS/Dijkstra</div>
           <p><strong>No hay nodo origen.</strong> En BFS/DFS/Dijkstra arrancás desde un nodo específico. En orden topológico arrancás desde <strong>TODOS los nodos que tienen grado de entrada 0</strong> — pueden ser varios al mismo tiempo en la bolsa. No elegís uno — metés todos.</p>
+        </div>
+
+        <div class="info-box tip" style="margin-top:12px;">
+          <div class="box-title">💡 Para recordar</div>
+          <p><strong>Orden topológico = la lista de materias.</strong> No podés cursar Algo 2 sin Algo 1. Cuando aprobás una materia (la sacás de la bolsa), les restás 1 a las que dependían de ella. Cuando una materia queda con 0 previas pendientes, la podés cursar (entra a la bolsa).</p>
         </div>
 
         <div class="notebook-box">
@@ -6013,51 +6039,91 @@ a nuevos vecinos → los metés al heap con su costo.</div>
 
         <div class="info-box definition">
           <div class="box-title">📐 Idea general</div>
+          <p style="margin-top:8px;">Es como Dijkstra pero <strong>sin la garantía de "visitado = definitivo"</strong>. Como los pesos pueden ser negativos, un nodo puede mejorar su costo varias veces. Entonces:</p>
           <ol style="margin-top:8px;">
-            <li>Inicializar distancias: origen = 0, resto = INF.</li>
-            <li>Usar una cola FIFO con el nodo origen.</li>
-            <li>Para cada nodo sacado de la cola, actualizar distancias de vecinos.</li>
-            <li>Si un vecino mejora, agregarlo a la cola (puede procesarse varias veces).</li>
+            <li>Inicializar: costo[origen] = 0, resto = INF.</li>
+            <li>Usar una <strong>cola FIFO</strong> (no un heap) con el nodo origen.</li>
+            <li>Para cada nodo sacado de la cola: recorrer vecinos, si mejora → actualizar y re-encolar.</li>
+            <li>Un nodo puede entrar y salir de la cola <strong>varias veces</strong>.</li>
           </ol>
         </div>
 
-        <h3 style="margin-top:16px;">Código C++</h3>
-        <pre><span class="code-keyword">void</span> bellman_ford(Graph* g, <span class="code-type">int</span> start) {
-    <span class="code-type">int</span>* distances = <span class="code-keyword">new</span> <span class="code-type">int</span>[n];
-    <span class="code-type">int</span>* parents = <span class="code-keyword">new</span> <span class="code-type">int</span>[n];
-    <span class="code-type">bool</span>* in_queue = <span class="code-keyword">new</span> <span class="code-type">bool</span>[n]();
-    <span class="code-keyword">for</span> (<span class="code-type">int</span> i = <span class="code-num">0</span>; i &lt; n; i++) {
-        distances[i] = INF; parents[i] = -<span class="code-num">1</span>; in_queue[i] = <span class="code-keyword">false</span>;
+        <div class="rotation-card">
+          <h4>Bellman-Ford vs Dijkstra — la diferencia clave</h4>
+          <div class="styled-table" style="margin:12px 0;">
+            <table>
+              <thead><tr><th></th><th>Dijkstra</th><th>Bellman-Ford</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Estructura</strong></td><td>Min-Heap</td><td>Cola FIFO</td></tr>
+                <tr><td><strong>¿Visitado = final?</strong></td><td>Sí — nunca vuelve</td><td>No — puede re-entrar a la cola</td></tr>
+                <tr><td><strong>Pesos negativos</strong></td><td style="color:var(--red);">No</td><td style="color:var(--green);">Sí</td></tr>
+                <tr><td><strong>Complejidad</strong></td><td>O((V+A) log V)</td><td>O(V × A)</td></tr>
+                <tr><td><strong>¿Cuándo usar?</strong></td><td>Sin negativos → siempre</td><td>Con negativos → obligatorio</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <h3 style="margin-top:16px;">Código (notación del profesor)</h3>
+        <pre><span class="code-keyword">void</span> bellmanFord(Grafo* g, <span class="code-type">int</span> origen) {
+    <span class="code-type">int</span> v = g-&gt;getV();
+    <span class="code-type">int</span>* costo = <span class="code-keyword">new</span> <span class="code-type">int</span>[v + <span class="code-num">1</span>];
+    <span class="code-type">int</span>* vengo = <span class="code-keyword">new</span> <span class="code-type">int</span>[v + <span class="code-num">1</span>];
+    <span class="code-type">bool</span>* encolado = <span class="code-keyword">new</span> <span class="code-type">bool</span>[v + <span class="code-num">1</span>];
+    <span class="code-keyword">for</span> (<span class="code-type">int</span> i = <span class="code-num">0</span>; i &lt;= v; i++) {
+        costo[i] = INF; vengo[i] = -<span class="code-num">1</span>; encolado[i] = <span class="code-keyword">false</span>;
     }
-    distances[start] = <span class="code-num">0</span>;
+    costo[origen] = <span class="code-num">0</span>;
 
-    Queue&lt;<span class="code-type">int</span>&gt;* queue = <span class="code-keyword">new</span> QueueImp&lt;<span class="code-type">int</span>&gt;();
-    queue-&gt;enqueue(start);
+    Queue&lt;<span class="code-type">int</span>&gt;* cola = <span class="code-keyword">new</span> QueueImp&lt;<span class="code-type">int</span>&gt;();
+    cola-&gt;enqueue(origen);
+    encolado[origen] = <span class="code-keyword">true</span>;
 
-    <span class="code-keyword">while</span> (!queue-&gt;isEmpty()) {
-        <span class="code-type">int</span> u = queue-&gt;dequeue();
-        in_queue[u] = <span class="code-keyword">false</span>;
+    <span class="code-keyword">while</span> (!cola-&gt;isEmpty()) {
+        <span class="code-type">int</span> u = cola-&gt;dequeue();
+        encolado[u] = <span class="code-keyword">false</span>;  <span class="code-comment">// puede volver a entrar</span>
 
-        Iterator&lt;Edge&gt;* it = g-&gt;adjacents(u);
-        <span class="code-keyword">while</span> (it-&gt;hasNext()) {
-            Edge edge = it-&gt;next();
-            <span class="code-type">int</span> v = edge.to, weight = edge.weight;
-            <span class="code-keyword">if</span> (distances[u] + weight &lt; distances[v]) {
-                distances[v] = distances[u] + weight;
-                parents[v] = u;
-                <span class="code-keyword">if</span> (!in_queue[v]) {
-                    queue-&gt;enqueue(v); in_queue[v] = <span class="code-keyword">true</span>;
+        NodoLista&lt;Arista&gt;* ady = g-&gt;adyacentesA(u);
+        <span class="code-keyword">while</span> (ady != NULL) {
+            <span class="code-type">int</span> w = ady-&gt;elemento.destino;
+            <span class="code-type">int</span> costoArista = ady-&gt;elemento.peso;
+            <span class="code-keyword">if</span> (costo[u] + costoArista &lt; costo[w]) {
+                costo[w] = costo[u] + costoArista;
+                vengo[w] = u;
+                <span class="code-keyword">if</span> (!encolado[w]) {
+                    cola-&gt;enqueue(w);
+                    encolado[w] = <span class="code-keyword">true</span>;
                 }
             }
+            ady = ady-&gt;sig;
         }
     }
-    <span class="code-keyword">delete</span>[] distances; <span class="code-keyword">delete</span>[] parents; <span class="code-keyword">delete</span>[] in_queue;
+    <span class="code-comment">// costo[i] = costo mínimo de origen a i</span>
+    <span class="code-comment">// vengo[i] = desde qué nodo llegué a i</span>
+    <span class="code-keyword">delete</span>[] costo; <span class="code-keyword">delete</span>[] vengo; <span class="code-keyword">delete</span>[] encolado;
+    <span class="code-keyword">delete</span> cola;
 }</pre>
 
+        <div class="rotation-card" style="margin-top:12px;">
+          <h4>¿Por qué encolado y no visitado?</h4>
+          <p style="font-size:13.5px;color:var(--text-muted);margin:8px 0;">En Bellman-Ford usamos <span class="inline-code">encolado</span> (como en BFS), <strong>no visitado</strong> (como en Dijkstra). ¿Por qué?</p>
+          <ul style="font-size:13.5px;color:var(--text-muted);line-height:2;">
+            <li>En Dijkstra, <span class="inline-code">visitado = true</span> significa "terminé, nunca más lo toco".</li>
+            <li>En Bellman-Ford, un nodo <strong>puede mejorar</strong> después de ser procesado (por un peso negativo). Entonces no hay "visitado definitivo".</li>
+            <li><span class="inline-code">encolado</span> solo significa "ya está en la cola, no lo metas de nuevo". Pero cuando sale (<span class="inline-code">encolado = false</span>), <strong>puede volver a entrar</strong> si alguien le mejora el costo.</li>
+          </ul>
+        </div>
+
+        <div class="info-box tip" style="margin-top:12px;">
+          <div class="box-title">💡 Para recordar</div>
+          <p><strong>Bellman-Ford es el Dijkstra pesimista.</strong> Dijkstra confía: "si ya lo visité, no va a mejorar". Bellman-Ford no confía en nadie: "puede que mejore, dejalo volver a la cola". Por eso acepta negativos (donde Dijkstra se rompe) pero es más lento — O(V×A) vs O((V+A)logV).</p>
+        </div>
+
         <div class="notebook-box">
-          <div class="nb-title">Sección 8 — Bellman-Ford</div>
+          <div class="nb-title">Sección 9 — Bellman-Ford <span class="nb-tag">PARCIAL</span></div>
           <span class="nb-key"><strong>Tipo:</strong> single-source, como Dijkstra pero acepta pesos negativos.</span>
-          <span class="nb-key"><strong>Diferencia clave:</strong> un nodo puede procesarse múltiples veces (se re-encola si mejora).</span>
+          <span class="nb-key"><strong>Diferencia clave:</strong> un nodo puede procesarse múltiples veces. Usa cola FIFO, no heap.</span>
+          <span class="nb-key"><strong>Array:</strong> <code>encolado</code> (no visitado) — porque un nodo puede volver a entrar.</span>
           <span class="nb-key"><strong>Complejidad:</strong> O(V × A) — más lento que Dijkstra.</span>
           <span class="nb-key"><strong>Cuándo usarlo:</strong> cuando hay aristas con peso negativo. Si no hay negativos, Dijkstra es mejor.</span>
         </div>
@@ -6069,34 +6135,162 @@ a nuevos vecinos → los metés al heap con su costo.</div>
         <p>Camino más corto entre <strong>todos los pares</strong> de vértices. Simple de implementar. Acepta pesos negativos (no ciclos negativos).</p>
 
         <div class="info-box definition">
-          <div class="box-title">📐 Idea general</div>
-          <ol style="margin-top:8px;">
-            <li>Inicializar una matriz dist[][] con los pesos de las aristas. dist[i][i] = 0.</li>
-            <li>Para cada nodo intermedio k: para cada par (i,j), verificar si dist[i][k] + dist[k][j] &lt; dist[i][j].</li>
-            <li>Si sí, actualizar.</li>
-          </ol>
-          <p style="margin-top:8px;color:var(--text-muted);">Son 3 loops anidados: k, i, j. Por eso O(V³).</p>
+          <div class="box-title">📐 La idea: clausura transitiva</div>
+          <p style="margin-top:8px;">El profesor habla de <strong>transitiva</strong> — es la clausura transitiva de los caminos:</p>
+          <ul style="margin-top:8px;">
+            <li>Si hay camino de A a K, y camino de K a B, entonces <strong>hay camino de A a B pasando por K</strong>.</li>
+            <li>Floyd pregunta para CADA nodo K: "¿puedo mejorar el camino de i a j <strong>pasando por K</strong>?"</li>
+            <li>Si <span class="inline-code">costo[i][k] + costo[k][j] &lt; costo[i][j]</span> → sí, encontré un camino mejor pasando por K.</li>
+          </ul>
+          <p style="margin-top:8px;color:var(--text-muted);">Al probar TODOS los nodos como intermediarios (k = 1, 2, ..., V), al final tenés el camino más corto entre todos los pares.</p>
         </div>
 
-        <h3 style="margin-top:16px;">Código C++ — El triple loop</h3>
-        <pre><span class="code-comment">// Después de inicializar dist[][] con las aristas:</span>
-<span class="code-keyword">for</span> (<span class="code-type">int</span> k = <span class="code-num">0</span>; k &lt; V; k++) {
-    <span class="code-keyword">for</span> (<span class="code-type">int</span> i = <span class="code-num">0</span>; i &lt; V; i++) {
-        <span class="code-keyword">for</span> (<span class="code-type">int</span> j = <span class="code-num">0</span>; j &lt; V; j++) {
-            <span class="code-keyword">if</span> (dist[i][k] &lt; INF && dist[k][j] &lt; INF
-                && dist[i][k] + dist[k][j] &lt; dist[i][j]) {
-                dist[i][j] = dist[i][k] + dist[k][j];
+        <div class="rotation-card">
+          <h4>Matriz de Clausura Transitiva</h4>
+          <p style="font-size:13.5px;color:var(--text-muted);margin:8px 0;">El profesor la llama así: la <strong>matriz de clausura transitiva</strong>. ¿Qué significa?</p>
+          <p style="font-size:13.5px;color:var(--text-muted);">La <strong>transitividad</strong> dice: si puedo ir de A a B, y de B a C, entonces puedo ir de A a C. La <strong>clausura transitiva</strong> es aplicar esa regla hasta agotar todas las posibilidades.</p>
+          <div class="tree-diagram" style="font-size:12px;margin:12px 0;">Antes de Floyd (solo aristas directas):
+  1→2 (costo 5), 2→3 (costo 3)
+  ¿1→3? No hay arista directa → costo[1][3] = INF
+
+Después de Floyd (clausura transitiva):
+  1→3 pasando por 2: costo[1][2] + costo[2][3] = 5 + 3 = 8
+  costo[1][3] = 8 ← encontró el camino transitivo</div>
+          <p style="font-size:13.5px;color:var(--text-muted);margin-top:12px;">Floyd <strong>cierra</strong> la matriz — al terminar, si existe un camino de i a j (por cualquier cantidad de nodos intermedios), <span class="inline-code">costo[i][j]</span> tiene el costo mínimo. Si no existe camino, queda en INF.</p>
+
+          <div class="info-box tip" style="margin-top:12px;">
+            <div class="box-title">💡 Versión simplificada: solo saber si hay camino (sin costos)</div>
+            <p>Si solo te interesa saber si existe camino de i a j (sí/no, sin importar el costo), la clausura transitiva se puede hacer con una matriz de <strong>bools</strong>:</p>
+            <pre style="font-size:12px;margin:8px 0;"><span class="code-comment">// alcanzable[i][j] = true si hay algún camino de i a j</span>
+<span class="code-keyword">for</span> (<span class="code-type">int</span> k = <span class="code-num">1</span>; k &lt;= v; k++)
+    <span class="code-keyword">for</span> (<span class="code-type">int</span> i = <span class="code-num">1</span>; i &lt;= v; i++)
+        <span class="code-keyword">for</span> (<span class="code-type">int</span> j = <span class="code-num">1</span>; j &lt;= v; j++)
+            <span class="code-keyword">if</span> (alcanzable[i][k] && alcanzable[k][j])
+                alcanzable[i][j] = <span class="code-keyword">true</span>;</pre>
+            <p style="font-size:12px;color:var(--text-muted);">Mismo triple loop, pero en vez de sumar costos y comparar, solo propagás "si puedo llegar a k y desde k puedo llegar a j, entonces puedo llegar de i a j". Sirve para determinar <strong>conexidad</strong> en grafos dirigidos.</p>
+          </div>
+        </div>
+
+        <div class="rotation-card" style="margin-top:12px;">
+          <h4>Paso a paso — ¿qué hace el loop de K?</h4>
+          <p style="font-size:13.5px;color:var(--text-muted);margin:8px 0;">Imaginá que tenés 4 nodos. Floyd prueba:</p>
+          <div class="tree-diagram" style="font-size:12px;margin:12px 0;">k=1: Para cada par (i,j): ¿conviene ir de i a j pasando por el nodo 1?
+      costo[i][1] + costo[1][j] &lt; costo[i][j]? → si sí, actualizar
+
+k=2: Para cada par (i,j): ¿conviene ir de i a j pasando por el nodo 2?
+      (ya considerando los caminos mejorados por k=1)
+
+k=3: Para cada par (i,j): ¿conviene pasando por 3?
+      (ya considerando mejoras de k=1 y k=2)
+
+k=4: Para cada par (i,j): ¿conviene pasando por 4?
+
+Al final: costo[i][j] tiene el camino más corto de i a j,
+usando cualquier combinación de nodos intermedios.</div>
+          <p style="font-size:13px;color:var(--text-muted);margin-top:8px;">Cada iteración de K "abre" un nodo más como posible intermediario. Al terminar, todos los nodos fueron probados como intermediarios — <strong>clausura transitiva</strong> completa.</p>
+        </div>
+
+        <div class="rotation-card" style="margin-top:12px;">
+          <h4>La matriz — ¿qué representa costo[i][j]?</h4>
+          <p style="font-size:13.5px;color:var(--text-muted);margin:8px 0;">Es una matriz V×V donde cada celda guarda el costo mínimo para ir de i a j:</p>
+          <div class="tree-diagram" style="font-size:12px;margin:12px 0;">      1    2    3    4
+  1 [ 0    5    3    7  ]   ← costos desde nodo 1
+  2 [ INF  0    1    5  ]   ← costos desde nodo 2
+  3 [ INF  INF  0    4  ]   ← costos desde nodo 3
+  4 [ INF  INF  INF  0  ]   ← costos desde nodo 4
+
+costo[1][3] = 3 → el camino más barato de 1 a 3 cuesta 3
+costo[2][4] = 5 → el camino más barato de 2 a 4 cuesta 5
+costo[4][1] = INF → no hay camino de 4 a 1</div>
+        </div>
+
+        <h3 style="margin-top:20px;">Código (notación del profesor)</h3>
+        <pre><span class="code-keyword">void</span> floydWarshall(Grafo* g) {
+    <span class="code-type">int</span> v = g-&gt;getV();
+    <span class="code-comment">// Inicializar la matriz con las aristas del grafo</span>
+    <span class="code-type">int</span>** costo = <span class="code-keyword">new</span> <span class="code-type">int</span>*[v + <span class="code-num">1</span>];
+    <span class="code-type">int</span>** vengo = <span class="code-keyword">new</span> <span class="code-type">int</span>*[v + <span class="code-num">1</span>];
+    <span class="code-keyword">for</span> (<span class="code-type">int</span> i = <span class="code-num">1</span>; i &lt;= v; i++) {
+        costo[i] = <span class="code-keyword">new</span> <span class="code-type">int</span>[v + <span class="code-num">1</span>];
+        vengo[i] = <span class="code-keyword">new</span> <span class="code-type">int</span>[v + <span class="code-num">1</span>];
+        <span class="code-keyword">for</span> (<span class="code-type">int</span> j = <span class="code-num">1</span>; j &lt;= v; j++) {
+            costo[i][j] = INF;
+            vengo[i][j] = -<span class="code-num">1</span>;
+        }
+        costo[i][i] = <span class="code-num">0</span>;  <span class="code-comment">// de i a i cuesta 0</span>
+    }
+
+    <span class="code-comment">// Cargar las aristas del grafo en la matriz</span>
+    <span class="code-keyword">for</span> (<span class="code-type">int</span> i = <span class="code-num">1</span>; i &lt;= v; i++) {
+        NodoLista&lt;Arista&gt;* ady = g-&gt;adyacentesA(i);
+        <span class="code-keyword">while</span> (ady != NULL) {
+            <span class="code-type">int</span> dest = ady-&gt;elemento.destino;
+            <span class="code-type">int</span> peso = ady-&gt;elemento.peso;
+            costo[i][dest] = peso;
+            vengo[i][dest] = i;
+            ady = ady-&gt;sig;
+        }
+    }
+
+    <span class="code-comment">// El triple loop — clausura transitiva</span>
+    <span class="code-keyword">for</span> (<span class="code-type">int</span> k = <span class="code-num">1</span>; k &lt;= v; k++) {
+        <span class="code-keyword">for</span> (<span class="code-type">int</span> i = <span class="code-num">1</span>; i &lt;= v; i++) {
+            <span class="code-keyword">for</span> (<span class="code-type">int</span> j = <span class="code-num">1</span>; j &lt;= v; j++) {
+                <span class="code-keyword">if</span> (costo[i][k] &lt; INF && costo[k][j] &lt; INF
+                    && costo[i][k] + costo[k][j] &lt; costo[i][j]) {
+                    costo[i][j] = costo[i][k] + costo[k][j];
+                    vengo[i][j] = vengo[k][j];
+                }
             }
         }
     }
+
+    <span class="code-comment">// costo[i][j] = costo mínimo de i a j</span>
+    <span class="code-comment">// vengo[i][j] = nodo anterior a j en el camino de i a j</span>
 }</pre>
 
+        <div class="rotation-card" style="margin-top:12px;">
+          <h4>¿Por qué cada línea?</h4>
+          <ul style="font-size:13.5px;color:var(--text-muted);line-height:2;">
+            <li><span class="inline-code">costo[i][i] = 0</span> — ir de un nodo a sí mismo cuesta 0.</li>
+            <li><span class="inline-code">costo[i][k] &lt; INF && costo[k][j] &lt; INF</span> — verificar que existan caminos de i a k y de k a j. Si alguno es INF (no hay camino), sumarlos daría overflow.</li>
+            <li><span class="inline-code">costo[i][k] + costo[k][j] &lt; costo[i][j]</span> — ¿es más barato ir de i a j pasando por k que el camino actual?</li>
+            <li><span class="inline-code">vengo[i][j] = vengo[k][j]</span> — si el camino mejora pasando por k, el nodo anterior a j en el nuevo camino es el mismo que en el camino de k a j.</li>
+            <li><strong>k va PRIMERO</strong> (loop externo) — esto es crucial. Si k fuera el loop interno, no funcionaría porque los caminos intermedios no estarían calculados todavía.</li>
+          </ul>
+        </div>
+
+        <div class="info-box tip">
+          <div class="box-title">💡 Floyd vs Dijkstra V veces — ¿cuándo usar cada uno?</div>
+          <div class="styled-table" style="margin-top:8px;">
+            <table>
+              <thead><tr><th></th><th>Floyd</th><th>Dijkstra V veces</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Complejidad</strong></td><td>O(V³)</td><td>O(V(V+A) log V)</td></tr>
+                <tr><td><strong>Grafo denso (A≈V²)</strong></td><td style="color:var(--green);">O(V³) — gana</td><td>O(V³ log V) — más lento</td></tr>
+                <tr><td><strong>Grafo disperso (A≈V)</strong></td><td>O(V³) — desperdicio</td><td style="color:var(--green);">O(V² log V) — gana</td></tr>
+                <tr><td><strong>Pesos negativos</strong></td><td style="color:var(--green);">Sí</td><td style="color:var(--red);">No</td></tr>
+                <tr><td><strong>Implementación</strong></td><td style="color:var(--green);">3 loops, muy simple</td><td>Heap + más código</td></tr>
+                <tr><td><strong>Resultado</strong></td><td>Matriz V×V completa</td><td>Hay que correr V veces</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="info-box tip" style="margin-top:12px;">
+          <div class="box-title">💡 Para recordar</div>
+          <p><strong>Floyd es el más vago de los algoritmos</strong> — 3 for anidados y listo. No necesita heap, ni cola, ni visitados, ni nada. Pero el vago trabaja O(V³) sin importar si el grafo es denso o disperso. Para grafos dispersos, es trabajar de más. Para densos, es perfecto.</p>
+        </div>
+
         <div class="notebook-box">
-          <div class="nb-title">Sección 9 — Floyd-Warshall <span class="nb-tag">PARCIAL</span></div>
-          <span class="nb-key"><strong>Tipo:</strong> all-pairs (todos los pares). Resultado: una matriz V×V de distancias.</span>
-          <span class="nb-key"><strong>Complejidad:</strong> O(V³). Acepta pesos negativos, no ciclos negativos.</span>
-          <span class="nb-key"><strong>Pregunta de parcial:</strong> "¿Cuándo usar Floyd en vez de Dijkstra V veces?" → Floyd es mejor en grafos densos (V² aristas ≈ V³ de Floyd). Dijkstra V veces = O(V(V+A)logV), mejor para dispersos.</span>
-          <span class="nb-key"><strong>Implementación:</strong> usa matriz de adyacencia. 3 loops: k (intermedio), i (origen), j (destino).</span>
+          <div class="nb-title">Sección 10 — Floyd-Warshall <span class="nb-tag">PARCIAL</span></div>
+          <span class="nb-key"><strong>Tipo:</strong> all-pairs. Resultado: una matriz V×V con costo[i][j] = camino mínimo de i a j.</span>
+          <span class="nb-key"><strong>Clausura transitiva:</strong> para cada k, pregunta "¿conviene ir de i a j pasando por k?" Si sí, actualiza.</span>
+          <span class="nb-key"><strong>Complejidad:</strong> O(V³). 3 loops: k (intermediario, EXTERNO), i (origen), j (destino).</span>
+          <span class="nb-key"><strong>Acepta pesos negativos</strong> pero NO ciclos negativos.</span>
+          <hr class="nb-divider">
+          <span class="nb-key"><strong>Pregunta de parcial:</strong> "¿Floyd o Dijkstra V veces?" → Floyd para densos o con negativos. Dijkstra V veces para dispersos sin negativos.</span>
+          <span class="nb-key"><strong>Clave:</strong> k va en el loop EXTERNO. Si lo ponés adentro, no funciona.</span>
         </div>
       </div>
 
@@ -6117,15 +6311,78 @@ a nuevos vecinos → los metés al heap con su costo.</div>
           <p style="margin-top:8px;color:var(--text-muted);">Muy similar a Dijkstra. La diferencia es una sola línea en la actualización:</p>
         </div>
 
-        <div class="rotation-card">
-          <h4>Dijkstra vs Prim — La diferencia</h4>
-          <pre style="font-size:12px;"><span class="code-comment">// DIJKSTRA: acumula distancia total desde el origen</span>
-<span class="code-keyword">if</span> (dist[v] > dist[u] + weight)
-    dist[v] = dist[u] + weight;
+        <div class="info-box important">
+          <div class="box-title">🚨 Dijkstra vs Prim — EL profesor hace énfasis en esto</div>
+          <p>En el parcial te puede dar un grafo y pedirte que lo ejecutes a mano. Tenés que saber <strong>exactamente dónde cambia</strong> una sola línea y <strong>por qué</strong>.</p>
+        </div>
 
-<span class="code-comment">// PRIM: solo el peso de la arista directa</span>
-<span class="code-keyword">if</span> (dist[v] > weight)
-    dist[v] = weight;</pre>
+        <div class="rotation-card">
+          <h4>La ÚNICA línea que cambia</h4>
+          <pre style="font-size:13px;"><span class="code-comment">// DIJKSTRA:</span>
+<span class="code-keyword">if</span> (costo[w] > costo[v] + costoArista)
+    costo[w] = costo[v] + costoArista;
+
+<span class="code-comment">// PRIM:</span>
+<span class="code-keyword">if</span> (costo[w] > costoArista)
+    costo[w] = costoArista;</pre>
+          <p style="font-size:13.5px;color:var(--text-muted);margin-top:12px;">Todo lo demás es <strong>idéntico</strong>: el heap, el while, el visitado, el recorrido de adyacentes. Solo cambia qué valor se compara y se guarda en <span class="inline-code">costo[w]</span>.</p>
+        </div>
+
+        <div class="rotation-card" style="margin-top:12px;">
+          <h4>¿Por qué es distinto? Porque responden preguntas diferentes</h4>
+          <div class="styled-table" style="margin:12px 0;">
+            <table>
+              <thead><tr><th></th><th>Dijkstra</th><th>Prim</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Pregunta</strong></td><td>"¿Cuánto cuesta <strong>llegar desde el origen</strong> hasta w?"</td><td>"¿Cuánto cuesta <strong>la arista más barata</strong> para conectar w al MST?"</td></tr>
+                <tr><td><strong>costo[w] guarda</strong></td><td>Costo total acumulado desde el origen</td><td>Solo el peso de la arista que conecta w al MST</td></tr>
+                <tr><td><strong>La fórmula</strong></td><td><code>costo[v] + costoArista</code> → acumula</td><td><code>costoArista</code> → solo la arista</td></tr>
+                <tr><td><strong>vengo[w] significa</strong></td><td>"Llegué a w desde v, en el camino más corto"</td><td>"La arista v→w es la que conecta w al MST"</td></tr>
+                <tr><td><strong>El resultado</strong></td><td>Distancias mínimas desde el origen a todos</td><td>Las aristas que forman el MST</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="rotation-card" style="margin-top:12px;">
+          <h4>Ejemplo para ver la diferencia en la ejecución a mano</h4>
+          <div class="tree-diagram" style="font-size:12px;margin:12px 0;">Grafo: 1—2 (peso 10), 2—3 (peso 1), 1—3 (peso 8)
+Origen: nodo 1
+
+DIJKSTRA (camino más corto desde 1):
+  costo[1]=0, costo[2]=INF, costo[3]=INF
+  Proceso 1: vecino 2 → 0+10=10 &lt; INF → costo[2]=10
+              vecino 3 → 0+8=8 &lt; INF → costo[3]=8
+  Proceso 3 (menor costo): vecino 2 → 8+1=9 &lt; 10 → costo[2]=9  ← MEJORÓ!
+  Resultado: costo[2]=9, costo[3]=8
+  (el camino a 2 es 1→3→2, costo 9, no 1→2 directo que cuesta 10)
+
+PRIM (MST desde 1):
+  costo[1]=0, costo[2]=INF, costo[3]=INF
+  Proceso 1: vecino 2 → 10 &lt; INF → costo[2]=10
+              vecino 3 → 8 &lt; INF → costo[3]=8
+  Proceso 3 (menor costo): vecino 2 → 1 &lt; 10 → costo[2]=1  ← MEJORÓ!
+  Resultado: costo[2]=1, costo[3]=8
+  MST: arista 1—3 (peso 8) + arista 3—2 (peso 1) = total 9
+
+DIFERENCIA en el paso "Proceso 3, vecino 2":
+  Dijkstra: 8+1=9 &lt; 10? SÍ → costo[2]=9  (costo acumulado)
+  Prim:     1 &lt; 10? SÍ → costo[2]=1        (solo la arista)</div>
+        </div>
+
+        <div class="info-box tip" style="margin-top:12px;">
+          <div class="box-title">💡 Cómo no confundirse en el parcial</div>
+          <p>Preguntate: <strong>"¿estoy sumando el costo del nodo actual?"</strong></p>
+          <ul style="margin-top:8px;">
+            <li>Si sí → Dijkstra (acumulás: <code>costo[v] + costoArista</code>)</li>
+            <li>Si no → Prim (solo la arista: <code>costoArista</code>)</li>
+          </ul>
+          <p style="margin-top:8px;">Mnemotécnica: <strong>Dijkstra = Distancia</strong> (acumulás distancia total). <strong>Prim = Peso</strong> (solo te importa el peso de la arista).</p>
+        </div>
+
+        <div class="info-box tip" style="margin-top:12px;">
+          <div class="box-title">💡 El profesor dice</div>
+          <p><strong>"Prim es el primo de Dijkstra"</strong> — sabés Dijkstra, sacale lo acumulado y dejale solo el peso de la arista, y ya sabés dos algoritmos. Son primos: misma familia, una diferencia.</p>
         </div>
 
         <h3 style="margin-top:24px;">Kruskal</h3>
@@ -6180,8 +6437,13 @@ a nuevos vecinos → los metés al heap con su costo.</div>
     }
 };</pre>
 
+        <div class="info-box tip" style="margin-top:12px;">
+          <div class="box-title">💡 Para recordar</div>
+          <p><strong>Kruskal es el tacaño:</strong> ordena todas las aristas por precio y va comprando la más barata que no le haga un loop. <strong>Prim es el primo de Dijkstra:</strong> crece desde un nodo, siempre elige la conexión más barata al vecindario. Dos personalidades, mismo resultado (el MST).</p>
+        </div>
+
         <div class="notebook-box">
-          <div class="nb-title">Sección 10 — MST (Prim & Kruskal) <span class="nb-tag">PARCIAL</span></div>
+          <div class="nb-title">Sección 11 — MST (Prim & Kruskal) <span class="nb-tag">PARCIAL</span></div>
           <span class="nb-key"><strong>MST:</strong> subconjunto de aristas, sin ciclos, que conecta todos los nodos con costo mínimo. Solo para grafos no dirigidos ponderados.</span>
           <hr class="nb-divider">
           <span class="nb-key"><strong>Prim:</strong> crece el MST desde un nodo. Complejidad O((V+A)logV) con heap. Casi igual a Dijkstra (cambia 1 línea).</span>
@@ -6221,6 +6483,469 @@ a nuevos vecinos → los metés al heap con su costo.</div>
           <span class="nb-key"><strong>Camino más corto all-pairs:</strong> Floyd-Warshall O(V³). Bueno para densos.</span>
           <span class="nb-key"><strong>MST:</strong> Prim (crece desde un nodo) y Kruskal (ordena aristas + MFSet). Ambos para no dirigidos ponderados.</span>
           <span class="nb-key"><strong>Pregunta clave de parcial:</strong> "¿Cuándo usar cada uno?" → depende de: pesos negativos, single-source vs all-pairs, denso vs disperso.</span>
+        </div>
+      </div>
+
+      <!-- SECTION 13: Tips de Parcial -->
+      <div class="section-block" id="grafos-parcial">
+        <h2><span class="sec-num">13</span> Tips de Parcial — Cómo piensa el profesor</h2>
+        <p>El profesor dijo: <em>"No voy a pedir que escupan el código, pero sí cosas como: utilizar Dijkstra para determinar si un grafo es fuertemente conexo."</em> Acá van los patrones que le gustan.</p>
+
+        <div class="info-box important">
+          <div class="box-title">🚨 El formato del parcial</div>
+          <p>El profesor no pide "implemente Dijkstra". Pide cosas como "use Dijkstra para resolver X". Te da un <strong>algoritmo conocido</strong> y te pide <strong>aplicarlo a un problema nuevo</strong>. Tenés que saber adaptar, no solo copiar.</p>
+        </div>
+
+        <h3 style="margin-top:20px;">Patrón 1: "Usar X para determinar si es fuertemente conexo"</h3>
+        <div class="rotation-card">
+          <h4>Con Dijkstra</h4>
+          <p style="font-size:13.5px;color:var(--text-muted);margin:8px 0;">Dijkstra desde un origen te da el costo mínimo a <strong>todos los demás</strong>. Si algún nodo queda en INF, no es alcanzable desde ese origen.</p>
+          <div class="tree-diagram" style="font-size:12px;margin:12px 0;">¿Es fuertemente conexo?
+= ¿Desde CUALQUIER nodo puedo llegar a CUALQUIER otro?
+
+1. Correr Dijkstra desde CADA nodo (V veces)
+2. Después de cada Dijkstra, verificar:
+   ¿algún costo[i] quedó en INF?
+   → SÍ: no es fuertemente conexo (ese nodo no llega a todos)
+   → NO: ese nodo llega a todos, seguir con el próximo
+
+Si los V Dijkstras dieron todos OK → fuertemente conexo</div>
+          <p style="font-size:13px;color:var(--text-muted);margin-top:8px;"><strong>Complejidad:</strong> O(V × (V+A) log V). Es más lento que usar BFS/DFS V veces, pero si el profe te dice "usar Dijkstra", es lo que tenés que hacer.</p>
+        </div>
+
+        <div class="rotation-card" style="margin-top:12px;">
+          <h4>Con BFS/DFS (la forma normal)</h4>
+          <p style="font-size:13.5px;color:var(--text-muted);margin:8px 0;">Mismo concepto pero más simple y rápido:</p>
+          <div class="tree-diagram" style="font-size:12px;margin:12px 0;">1. DFS/BFS desde cada nodo
+2. Si en algún recorrido no se visitan todos → no es fuertemente conexo
+Complejidad: O(V × (V+A))</div>
+        </div>
+
+        <h3 style="margin-top:24px;">Patrón 2: "Usar X para contar componentes conexas"</h3>
+        <div class="rotation-card">
+          <h4>Con DFS (lo más rápido de escribir)</h4>
+          <div class="tree-diagram" style="font-size:12px;margin:12px 0;">cantConexas(g, -1)  // el -1 = no ignorar ningún nodo
+→ visitado[] global, for de 1 a V, cada DFS nuevo = componente++
+Complejidad: O(V+A)</div>
+        </div>
+        <div class="rotation-card" style="margin-top:12px;">
+          <h4>Con Dijkstra</h4>
+          <div class="tree-diagram" style="font-size:12px;margin:12px 0;">Mismo patrón que cantConexas pero usando Dijkstra en vez de DFS:
+1. Para cada nodo no procesado, correr Dijkstra
+2. Todos los nodos con costo != INF son parte de esa componente
+3. Cada Dijkstra nuevo = componente++
+Complejidad: O(V × (V+A) log V) — exagerado, pero funciona</div>
+        </div>
+
+        <h3 style="margin-top:24px;">Patrón 3: "Convertir grafo dirigido a no dirigido"</h3>
+        <div class="rotation-card">
+          <h4>¿Cuándo te lo piden?</h4>
+          <p style="font-size:13.5px;color:var(--text-muted);margin:8px 0;">Para verificar <strong>débilmente conexo</strong>: un grafo dirigido es débilmente conexo si al ignorar las direcciones queda conexo.</p>
+          <div class="tree-diagram" style="font-size:12px;margin:12px 0;">¿Es débilmente conexo?
+1. Construir el "grafo subyacente no dirigido":
+   Para cada arista u→v del grafo original,
+   agregar u→v Y v→u en un grafo nuevo
+2. Correr DFS/BFS una vez en el grafo nuevo
+3. ¿Todos visitados? → débilmente conexo</div>
+        </div>
+
+        <h3 style="margin-top:24px;">Patrón 4: "Modificar un algoritmo conocido para hacer otra cosa"</h3>
+        <div class="rotation-card">
+          <h4>Ejemplos de parciales anteriores</h4>
+          <div class="styled-table" style="margin:12px 0;">
+            <table>
+              <thead><tr><th>Te piden</th><th>Basás en</th><th>Qué cambiás</th></tr></thead>
+              <tbody>
+                <tr><td>Contar componentes conexas</td><td>DFS</td><td>visitado global + contador</td></tr>
+                <tr><td>Componente más grande</td><td>DFS + cantConexas</td><td>Agregar <code>tamaño++</code> en cada DFS</td></tr>
+                <tr><td>Punto de articulación</td><td>cantConexas</td><td>Agregar <code>visitado[candidato]=true</code> antes</td></tr>
+                <tr><td>Clasificar conexidad (F/D/No)</td><td>DFS × V + DFS no dirigido</td><td>Combinar dos chequeos</td></tr>
+                <tr><td>Bipartito (2 equipos)</td><td>DFS</td><td>Cambiar <code>visitado</code> por <code>color[]</code> con 2 valores</td></tr>
+                <tr><td>Dijkstra con nombres (strings)</td><td>Dijkstra + Hash</td><td>Hash traduce nombre→índice, Dijkstra usa los índices</td></tr>
+                <tr><td>Prim (MST)</td><td>Dijkstra</td><td>Cambiar 1 línea: <code>costo[w] > peso</code> en vez de <code>costo[w] > costo[v]+peso</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="font-size:13px;color:var(--text-muted);">El patrón siempre es: <strong>tomá algo que ya sabés y hacele un cambio chico</strong>. El profesor no inventa algoritmos nuevos en el parcial — te pide que adaptes los que ya viste.</p>
+        </div>
+
+        <h3 style="margin-top:24px;">Patrón 5: "¿Qué algoritmo usarías y por qué?"</h3>
+        <div class="rotation-card">
+          <h4>El árbol de decisión</h4>
+          <div class="tree-diagram" style="font-size:12px;margin:12px 0;">¿Qué necesitás?
+│
+├── Recorrer el grafo (sin costos)
+│   └── ¿Necesitás camino más corto no ponderado?
+│       ├── SÍ → BFS
+│       └── NO → DFS (más corto de escribir)
+│
+├── Camino más corto (con pesos)
+│   ├── ¿Desde un origen a todos? (single-source)
+│   │   ├── ¿Hay pesos negativos?
+│   │   │   ├── NO → Dijkstra  O((V+A)logV)
+│   │   │   └── SÍ → Bellman-Ford  O(V×A)
+│   │   └── ¿Es un DAG? → Orden topológico + relajación
+│   └── ¿Entre todos los pares? (all-pairs)
+│       ├── ¿Grafo denso? → Floyd  O(V³)
+│       └── ¿Grafo disperso? → Dijkstra V veces
+│
+├── Árbol de cubrimiento mínimo (MST)
+│   ├── Prim (similar a Dijkstra, crece desde un nodo)
+│   └── Kruskal (ordena aristas, usa MFSet)
+│
+└── Orden de dependencias
+    └── ¿DAG? → Orden topológico (Kahn)</div>
+        </div>
+
+        <h3 style="margin-top:24px;">Patrón 6: Preguntas teóricas frecuentes</h3>
+        <div class="rotation-card">
+          <h4>Estas caen siempre</h4>
+          <div class="styled-table" style="margin:12px 0;">
+            <table>
+              <thead><tr><th>Pregunta</th><th>Respuesta corta</th></tr></thead>
+              <tbody>
+                <tr><td>¿Por qué Dijkstra no funciona con negativos?</td><td>Porque "visitado = definitivo" se rompe — un peso negativo podría mejorar un nodo ya visitado.</td></tr>
+                <tr><td>¿Diferencia entre denso y completo?</td><td>Completo = tiene TODAS las aristas posibles. Denso = tiene muchas pero no necesariamente todas.</td></tr>
+                <tr><td>¿Floyd o Dijkstra V veces?</td><td>Floyd para densos o con negativos. Dijkstra V veces para dispersos sin negativos.</td></tr>
+                <tr><td>¿Por qué Kahn puede dar distintos resultados?</td><td>Cuando hay varios nodos con indegree 0 al mismo tiempo, el orden en que los sacás de la bolsa cambia el resultado.</td></tr>
+                <tr><td>¿Qué es un punto de articulación?</td><td>Vértice que al sacarlo aumenta las componentes conexas.</td></tr>
+                <tr><td>¿Cómo hacer getMin O(1) en AVL?</td><td>Cachear el mínimo. Actualizarlo en insert (si es menor) y en delete (si era el mínimo, buscar el nuevo).</td></tr>
+                <tr><td>¿Heap vs AVL para cola de prioridad?</td><td>Heap: insert O(log n), deleteMin O(log n), getMin O(1). AVL: todo O(log n) salvo getMin con cache.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <h3 style="margin-top:24px;">Patrón 7: "Cosas que parecen distintas pero son lo mismo"</h3>
+        <div class="rotation-card">
+          <h4>El profesor te va a dar un problema disfrazado</h4>
+          <p style="font-size:13.5px;color:var(--text-muted);margin:8px 0;">En el parcial, los problemas vienen con un "cuento" (festival, castillo, ciudad). Tenés que traducirlo a grafos:</p>
+          <div class="styled-table" style="margin:12px 0;">
+            <table>
+              <thead><tr><th>Lo que dice el enunciado</th><th>Lo que realmente es</th></tr></thead>
+              <tbody>
+                <tr><td>"Conectar escenarios con cable mínimo"</td><td>MST (Prim o Kruskal)</td></tr>
+                <tr><td>"Costo mínimo para ir de A a B"</td><td>Dijkstra (single-source)</td></tr>
+                <tr><td>"Cuántas secciones del castillo tienen ≥3 habitaciones"</td><td>Contar componentes con tamaño ≥ 3</td></tr>
+                <tr><td>"Dividir estudiantes en 2 grupos sin conflictos"</td><td>¿Es bipartito? (DFS con 2 colores)</td></tr>
+                <tr><td>"Planificar tareas con dependencias"</td><td>Orden topológico</td></tr>
+                <tr><td>"El router más crítico de la red"</td><td>Punto de articulación</td></tr>
+                <tr><td>"Costo mínimo entre todos los pares de ciudades"</td><td>Floyd-Warshall</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="font-size:13px;color:var(--text-muted);">Primero identificá qué tipo de problema es (MST, camino corto, componentes, etc.), después elegí el algoritmo, después escribí el código.</p>
+        </div>
+
+        <h3 style="margin-top:24px;">Patrón 8: "Justificá la complejidad"</h3>
+        <div class="rotation-card">
+          <h4>No alcanza con decir "O(V+A)" — tenés que explicar de dónde sale</h4>
+          <ul style="font-size:13.5px;color:var(--text-muted);line-height:2;">
+            <li><strong>"¿Por qué O(V+A)?"</strong> → "Porque visitamos cada nodo una vez (V) y recorremos cada arista una vez en la lista de adyacencia (A). Cada nodo y arista se procesa una cantidad constante de veces."</li>
+            <li><strong>"¿Por qué Dijkstra es O((V+A)logV)?"</strong> → "Vaciamos el heap: V extracciones × O(log V) = O(V log V). Para cada arista, potencialmente insertamos en el heap: A inserciones × O(log V) = O(A log V). Total: O((V+A) log V)."</li>
+            <li><strong>"¿Por qué Floyd es O(V³)?"</strong> → "3 loops anidados de 1 a V. Cada uno itera V veces. V × V × V = V³."</li>
+            <li><strong>"¿Por qué Build-Heap es O(N) y no O(N log N)?"</strong> → "Porque los nodos cerca de las hojas (la mayoría) bajan poco. La suma de hundimientos es 1×N/2 + 2×N/4 + 3×N/8 + ... = O(N) por serie geométrica."</li>
+          </ul>
+        </div>
+
+        <h3 style="margin-top:24px;">Patrón 9: "Siempre hay una trampa en el enunciado"</h3>
+        <div class="rotation-card">
+          <h4>Cosas que te hacen equivocar si no leés bien</h4>
+          <ul style="font-size:13.5px;color:var(--text-muted);line-height:2;">
+            <li><strong>"Grafo ponderado y completo, Dijkstra da mal"</strong> → tiene pesos negativos (la trampa).</li>
+            <li><strong>"Componentes conexas con al menos 3 vértices"</strong> → no contar las de 1 o 2 (la trampa).</li>
+            <li><strong>"Dos implementaciones de Kahn dan distintos resultados"</strong> → el orden de desempate cuando hay varios con indegree 0 (cola vs pila, o FIFO vs LIFO).</li>
+            <li><strong>"Obtener mínimo O(1) en AVL"</strong> → cachear, pero ¿qué pasa con las demás operaciones? (nada cambia).</li>
+            <li><strong>"Grafo acíclico, no dirigido, no conexo, ¿orden topológico?"</strong> → NO, porque necesita ser DIRIGIDO (la trampa).</li>
+            <li><strong>"Hash tabla con problemas de rendimiento"</strong> → no es cambiar la función ni agrandar — es rehashing (re-insertar todo).</li>
+          </ul>
+        </div>
+
+        <div class="notebook-box">
+          <div class="nb-title">Sección 13 — Tips de Parcial <span class="nb-tag">PARCIAL</span></div>
+          <span class="nb-key"><strong>El profe no pide código puro:</strong> pide "usá X para resolver Y". Tenés que saber adaptar algoritmos.</span>
+          <span class="nb-key"><strong>Patrón universal:</strong> tomá algo que ya sabés (DFS, Dijkstra, cantConexas) y hacele un cambio chico.</span>
+          <span class="nb-key"><strong>DFS sobre BFS:</strong> siempre que no pida camino más corto, usá DFS (~5 líneas recursivas).</span>
+          <hr class="nb-divider">
+          <span class="nb-key"><strong>Fuertemente conexo:</strong> DFS/Dijkstra desde cada nodo. Todos deben alcanzar todos.</span>
+          <span class="nb-key"><strong>Débilmente conexo:</strong> convertir a no dirigido + un solo DFS.</span>
+          <span class="nb-key"><strong>Punto de articulación:</strong> cantConexas con <code>visitado[candidato]=true</code>, probar cada nodo.</span>
+          <span class="nb-key"><strong>Bipartito:</strong> DFS con <code>color[]</code> de 2 valores. Si vecino tiene mismo color → NO.</span>
+        </div>
+      </div>
+
+      <!-- SECTION 14: Ejercicios tipo parcial -->
+      <div class="section-block" id="grafos-ejercicios-parcial">
+        <h2><span class="sec-num">14</span> Ejercicios tipo parcial — Todos los temas</h2>
+        <p>Basados en parciales reales (May'23, Oct'23, May'24, Oct'24). Practicá responderlos en papel, sin computadora, con tiempo.</p>
+
+        <h3 style="margin-top:20px;color:var(--accent-light);">AVL</h3>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P1</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 Oct'23</span></div>
+          <div class="ex-question">Además de las rotaciones simples (derecha e izquierda), los árboles AVL utilizan rotaciones dobles. Describí las rotaciones dobles (derecha-izquierda e izquierda-derecha) y cuándo se aplican. ¿Qué orden tienen estas rotaciones frente a las simples?</div>
+          <textarea placeholder="Doble derecha-izquierda se aplica cuando...&#10;Doble izquierda-derecha se aplica cuando...&#10;El orden es..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p><strong>Doble izquierda-derecha (LR):</strong> el desbalance está en el hijo izquierdo del hijo derecho de Z. Se aplica cuando Z tiene bf = -2 y su hijo Y tiene bf = +1. Primero se rota Y a la izquierda, después Z a la derecha.</p>
+            <p><strong>Doble derecha-izquierda (RL):</strong> el desbalance está en el hijo derecho del hijo izquierdo de Z. Se aplica cuando Z tiene bf = +2 y su hijo Y tiene bf = -1. Primero se rota Y a la derecha, después Z a la izquierda.</p>
+            <p><strong>Orden:</strong> O(1) — igual que las simples. Son 2 rotaciones simples, cada una O(1), entonces O(1) total. La diferencia es cuándo se aplican, no su costo.</p>
+          </div>
+        </div>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P2</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 Oct'23</span></div>
+          <div class="ex-question">Compará el orden de tiempo de <strong>Insertar</strong>, <strong>Borrar mínimo</strong> y <strong>Obtener mínimo</strong> para una cola de prioridad implementada con Heap y con AVL. Indicá cómo podría lograr que el Obtener mínimo para un AVL tenga tiempo constante, y qué impacto tendría en las demás operaciones.</div>
+          <textarea placeholder="Operación     | Heap     | AVL&#10;Insertar       | O(?)     | O(?)&#10;Borrar mín     | O(?)     | O(?)&#10;Obtener mín    | O(?)     | O(?)&#10;&#10;Para obtener O(1) en AVL: ..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p><strong>Insertar:</strong> Heap O(log n), AVL O(log n).</p>
+            <p><strong>Borrar mínimo:</strong> Heap O(log n), AVL O(log n).</p>
+            <p><strong>Obtener mínimo:</strong> Heap O(1) (la raíz), AVL O(log n) (hay que ir hasta la hoja más a la izquierda).</p>
+            <p><strong>¿Cómo hacer getMin O(1) en AVL?</strong> Cachear el mínimo en una variable. Actualizarlo en insert (si el nuevo elemento es menor) y en delete (si se borró el mínimo, buscar el nuevo mínimo en O(log n)). Las demás operaciones no cambian de orden — solo el delete del mínimo tiene un costo extra de buscar el nuevo, pero eso ya era O(log n).</p>
+          </div>
+        </div>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P3</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 May'23</span></div>
+          <div class="ex-question">Explicá la relación entre "AVL" y "árbol auto-balanceado".</div>
+          <textarea placeholder="Un AVL es un tipo de..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>Un AVL <strong>es un tipo de</strong> árbol auto-balanceado, no el único. "Árbol auto-balanceado" es la categoría general: árboles binarios de búsqueda que mantienen su altura en O(log n) automáticamente después de cada operación. AVL logra esto usando el <strong>factor de balance</strong> (diferencia de alturas entre subárboles) y rotaciones cuando |bf| > 1. Otros árboles auto-balanceados: Red-Black trees, B-trees.</p>
+          </div>
+        </div>
+
+        <h3 style="margin-top:28px;color:var(--accent-light);">Hash</h3>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P4</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 May'23</span></div>
+          <div class="ex-question">En una tabla de hash cerrada, ¿por qué debemos marcar los elementos eliminados como "eliminados" y no como NULL?</div>
+          <textarea placeholder="Si marcamos como NULL..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>Porque en hash cerrada, la búsqueda sigue un <strong>camino de probing</strong> (lineal, cuadrático o doble hashing). Si un elemento en el medio del camino se borra y se pone NULL, la búsqueda de otro elemento que pasó por esa posición se <strong>detendría prematuramente</strong> pensando que no existe — cuando en realidad está más adelante en el camino.</p>
+            <p>El <strong>tombstone</strong> ("eliminado") le dice a la búsqueda: "acá hubo algo, seguí buscando". Así no se rompe el camino de probing.</p>
+          </div>
+        </div>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P5</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 Oct'24</span></div>
+          <div class="ex-question">Usted tiene una tabla de hash dando problemas de rendimiento. Su compañero ofrece: <strong>A.</strong> Cambiar la función de hash dejando la tabla con sus datos inalterada. <strong>B.</strong> Duplicar el tamaño del array copiando los elementos a las mismas posiciones. Comentá qué problemas podría tener cada solución.</div>
+          <textarea placeholder="Solución A (cambiar función): ...&#10;Solución B (duplicar tamaño): ..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p><strong>A. Cambiar la función de hash sin mover datos:</strong> DESASTRE. Los elementos fueron insertados usando la función vieja — sus posiciones dependen de ella. Con la nueva función, la búsqueda calcula posiciones diferentes y no encuentra los datos. Hay que hacer <strong>rehashing</strong>: re-insertar todos los elementos con la nueva función.</p>
+            <p><strong>B. Duplicar tamaño copiando a las mismas posiciones:</strong> NO SIRVE. La función de hash usa <code>% tamaño</code>. Si el tamaño cambia, la función da resultados diferentes. Los elementos quedan en posiciones que no corresponden al nuevo tamaño. También requiere <strong>rehashing</strong>.</p>
+            <p><strong>La solución correcta:</strong> crear una tabla nueva (con mejor función o más grande), re-insertar todos los elementos usando la nueva función. Eso es rehashing.</p>
+          </div>
+        </div>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P6</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 May'24</span></div>
+          <div class="ex-question">Explicá las similitudes y diferencias del <strong>factor de carga</strong> en el hash abierto vs hash cerrado.</div>
+          <textarea placeholder="Factor de carga = ...&#10;En abierto: ...&#10;En cerrado: ..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p><strong>Factor de carga α = n/m</strong> (elementos / tamaño de tabla). En ambos casos mide "qué tan llena está la tabla".</p>
+            <p><strong>Hash abierto (chaining):</strong> α puede ser > 1 (más elementos que posiciones, las listas crecen). Se recomienda rehashing cuando α > 1.0. El rendimiento degrada linealmente con α (búsqueda promedio = 1 + α/2).</p>
+            <p><strong>Hash cerrado (direccionamiento abierto):</strong> α NUNCA puede ser > 1 (cada posición tiene un solo elemento). Se recomienda rehashing cuando α > 0.7-0.75. El rendimiento degrada mucho más rápido que en abierto cuando α se acerca a 1 (clustering).</p>
+          </div>
+        </div>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P7</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 May'23</span></div>
+          <div class="ex-question">¿Para qué utilizaríamos un heap en conjunto con una tabla de hash?</div>
+          <textarea placeholder="El heap solo tiene un problema: ...&#10;La hash resuelve: ..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>Para implementar una <strong>Cola de Prioridad Extendida</strong>. El heap mantiene el orden de prioridades (insert/deleteMin en O(log n), getMin en O(1)), pero <strong>no puede encontrar un elemento arbitrario</strong> eficientemente — buscar x es O(n).</p>
+            <p>La hash mapea <strong>elemento → posición en el heap</strong> en O(1). Así, operaciones como <strong>changePriority(x)</strong> y <strong>delete(x)</strong> pasan de O(n) a O(log n): la hash encuentra x en O(1), y después swim/sink es O(log n).</p>
+          </div>
+        </div>
+
+        <h3 style="margin-top:28px;color:var(--accent-light);">Heap</h3>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P8</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 Oct'24</span></div>
+          <div class="ex-question">Tenés un array de enteros que representa un <strong>min-heap válido</strong>. Devolvé un nuevo array con los mismos datos pero que represente un <strong>max-heap</strong>. Hacerlo en <strong>O(N) promedio</strong>. Aclará si usás base 0 o base 1.</div>
+          <textarea placeholder="Uso base: ...&#10;Paso 1: ...&#10;Paso 2: ...&#10;Complejidad: ..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p><strong>La clave:</strong> el orden del min-heap no sirve para nada para el max-heap. Simplemente copiá los elementos al nuevo array y hacé <strong>Build-Heap</strong> (heapify) para max-heap.</p>
+            <p><strong>Build-Heap:</strong> recorrer desde n/2 hasta 1 (o 0 en base 0), llamando <code>hundir(i)</code> para cada posición. Esto construye un heap válido en <strong>O(N)</strong> — no O(N log N) como insertar de a uno.</p>
+            <p>¿Por qué O(N)? Porque la mayoría de los nodos están cerca de las hojas y casi no bajan. La suma total de hundimientos es N, no N log N (demostración por serie geométrica).</p>
+          </div>
+        </div>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P9</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 May'23</span></div>
+          <div class="ex-question">¿Cómo puedes implementar un heap que permita la <strong>eliminación de elementos no solo desde la raíz</strong>? (No usar estructuras de datos auxiliares). Describí el algoritmo y su complejidad.</div>
+          <textarea placeholder="Paso 1: ...&#10;Paso 2: ...&#10;Complejidad: ..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>Sin estructuras auxiliares, hay que <strong>escanear el array</strong> para encontrar el elemento:</p>
+            <ol>
+              <li><strong>Encontrar x</strong> escaneando el array → posición i. O(n).</li>
+              <li><strong>Swap</strong> arr[i] con arr[sigLibre-1]. Después sigLibre--.</li>
+              <li>Llamar <strong>flotar(i)</strong>. Después <strong>hundir(i)</strong>. Siempre los dos, sin pensar. Si tiene que subir, flotar lo mueve y hundir no hace nada. Si tiene que bajar, flotar no hace nada y hundir lo mueve.</li>
+            </ol>
+            <p><strong>Complejidad:</strong> O(n) — el scan domina. Con hash sería O(log n).</p>
+          </div>
+        </div>
+
+        <h3 style="margin-top:28px;color:var(--accent-light);">Grafos — Teoría</h3>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P10</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 Oct'24</span></div>
+          <div class="ex-question">¿Para solucionar qué tipo de problema y en qué tipo de grafos es más eficiente usar <strong>Floyd en lugar de Dijkstra V veces</strong>? Justificá brevemente.</div>
+          <textarea placeholder="Floyd es mejor cuando...&#10;Porque..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p><strong>Problema:</strong> camino más corto entre <strong>todos los pares</strong> de vértices.</p>
+            <p><strong>Tipo de grafo:</strong> grafos <strong>densos</strong> (A ≈ V²) o con <strong>pesos negativos</strong>.</p>
+            <p><strong>¿Por qué?</strong> Floyd = O(V³). Dijkstra V veces = O(V(V+A)logV). En un grafo denso, A ≈ V², entonces Dijkstra V veces ≈ O(V³ log V) — más lento que Floyd. Además, si hay pesos negativos, Dijkstra directamente no funciona.</p>
+            <p>En grafos <strong>dispersos</strong>, Dijkstra V veces gana: O(V² log V) vs O(V³).</p>
+          </div>
+        </div>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P11</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 Oct'24</span></div>
+          <div class="ex-question">Explicá las diferencias entre los algoritmos de <strong>Kruskal y Prim</strong> para encontrar el Árbol de Cobertura Mínima.</div>
+          <textarea placeholder="Kruskal: ...&#10;Prim: ...&#10;Diferencias: ..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p><strong>Kruskal:</strong> ordena TODAS las aristas por peso. Recorre de menor a mayor, agregando cada arista al MST si no forma ciclo (usa MFSet para detectar ciclos). Trabaja <strong>arista por arista</strong>. Complejidad: O(A log A).</p>
+            <p><strong>Prim:</strong> empieza desde un vértice y <strong>crece el MST</strong> nodo por nodo. En cada paso selecciona la arista más barata que conecta el MST con un nodo que no está en él. Similar a Dijkstra (cambia 1 línea). Complejidad: O((V+A) log V) con heap.</p>
+            <p><strong>Diferencias:</strong> Kruskal ve las aristas globalmente (ordenadas). Prim crece localmente (desde un nodo). Kruskal necesita MFSet. Prim necesita heap. Ambos dan el mismo MST (si los pesos son únicos).</p>
+          </div>
+        </div>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P12</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 May'24</span></div>
+          <div class="ex-question">Defina qué es un grafo: <strong>i.</strong> Conexo, <strong>ii.</strong> No conexo, <strong>iii.</strong> Fuertemente conexo, <strong>iv.</strong> Débilmente conexo.</div>
+          <textarea placeholder="i. Conexo: ...&#10;ii. No conexo: ...&#10;iii. Fuertemente conexo: ...&#10;iv. Débilmente conexo: ..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p><strong>i. Conexo</strong> (no dirigido): existe un camino entre cualquier par de nodos.</p>
+            <p><strong>ii. No conexo</strong>: existen nodos que no están conectados — hay más de una componente conexa.</p>
+            <p><strong>iii. Fuertemente conexo</strong> (dirigido): hay camino dirigido de u a v Y de v a u, para todo par (u,v). Se puede llegar de cualquier nodo a cualquier otro siguiendo las direcciones.</p>
+            <p><strong>iv. Débilmente conexo</strong> (dirigido): si ignoramos las direcciones de las aristas (lo tratamos como no dirigido), el grafo resultante es conexo. Pero siguiendo las direcciones, no necesariamente podés ir de cualquiera a cualquiera.</p>
+          </div>
+        </div>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P13</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 Oct'23</span></div>
+          <div class="ex-question"><strong>a.</strong> ¿Cuál es la diferencia entre un grafo denso y un grafo completo? <strong>b.</strong> Si debés implementar un grafo, ¿qué estructura utilizarías para las aristas si es denso o disperso? <strong>c.</strong> Tenés un grafo no dirigido, ponderado y completo. Después de ejecutar Dijkstra desde un origen, la distancia obtenida a un destino X no es correcta. ¿Qué sucedió?</div>
+          <textarea placeholder="a. Denso vs completo: ...&#10;b. Denso → ..., Disperso → ...&#10;c. Dijkstra falló porque: ..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p><strong>a.</strong> <strong>Completo</strong> = tiene TODAS las aristas posibles (V(V-1)/2 en no dirigido). <strong>Denso</strong> = tiene MUCHAS aristas pero no necesariamente todas. Todo grafo completo es denso, pero no todo denso es completo.</p>
+            <p><strong>b.</strong> Denso → <strong>matriz de adyacencia</strong> (O(V²) espacio, pero acceso O(1) a cualquier arista). Disperso → <strong>lista de adyacencia</strong> (O(V+A) espacio, no desperdicia).</p>
+            <p><strong>c.</strong> Si Dijkstra dio un resultado incorrecto, el grafo tiene <strong>aristas con peso negativo</strong>. Dijkstra asume que una vez visitado un nodo, su costo es definitivo. Un peso negativo puede mejorar un nodo ya visitado, rompiendo esa garantía.</p>
+          </div>
+        </div>
+
+        <h3 style="margin-top:28px;color:var(--accent-light);">Grafos — Implementación</h3>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P14</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 Oct'24</span></div>
+          <div class="ex-question">Implementá la función <span class="inline-code">Lista&lt;Arista*&gt;* quieroCobrar(Grafo * g)</span> que utilice un algoritmo de grafos para encontrar los cables con <strong>longitud total mínima</strong> para conectar todos los escenarios de un festival. El grafo tiene: <span class="inline-code">getVertices()</span>, <span class="inline-code">adyacentes(int v)</span>.</div>
+          <textarea style="min-height:120px;" placeholder="// Esto es un problema de MST...&#10;// Algoritmo: ...&#10;// Implementación:"></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>Es un problema de <strong>MST</strong> (Árbol de Cubrimiento Mínimo) — conectar todos los nodos con el menor costo total sin ciclos. Se puede usar <strong>Prim</strong> o <strong>Kruskal</strong>.</p>
+            <p>Con Prim: es casi igual a Dijkstra. La diferencia es que en vez de <code>costo[w] > costo[v] + peso</code>, se usa <code>costo[w] > peso</code> (solo el peso de la arista directa, no el acumulado).</p>
+          </div>
+        </div>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P15</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 Oct'24</span></div>
+          <div class="ex-question">Implementá <span class="inline-code">int contarComponentesConexas(Grafo *g)</span> que cuente cuántas componentes conexas tienen <strong>al menos 3 vértices</strong>. Grafo no dirigido.</div>
+          <textarea style="min-height:120px;" placeholder="// Patrón: cantConexas + contar tamaño de cada componente..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>Es <strong>cantConexas</strong> (DFS iterativo con visitado global) pero contando el <strong>tamaño</strong> de cada componente. Si tamaño >= 3, incrementar el contador.</p>
+            <p>El DFS_rec devuelve (o acumula) la cantidad de nodos visitados en esa componente. Si es >= 3, la contamos.</p>
+            <p><strong>Complejidad:</strong> O(V+A).</p>
+          </div>
+        </div>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P16</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 May'24</span></div>
+          <div class="ex-question">Implementá <span class="inline-code">void clasificarGrafo(Grafo * g)</span> que dado un grafo dirigido imprima: "fuertemente conexo", "débilmente conexo", o "no conexo".</div>
+          <textarea style="min-height:120px;" placeholder="// Paso 1: verificar fuertemente conexo...&#10;// Paso 2: si no, verificar débilmente conexo...&#10;// Paso 3: si no, no conexo"></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p><strong>1. ¿Fuertemente conexo?</strong> DFS desde cada nodo (V veces). Si todos los DFS visitan todos los nodos → fuertemente conexo.</p>
+            <p><strong>2. ¿Débilmente conexo?</strong> Construir el grafo subyacente no dirigido (para cada arista u→v, agregar también v→u). DFS desde cualquier nodo en el grafo no dirigido. Si visita todos → débilmente conexo.</p>
+            <p><strong>3. Si ni siquiera débilmente:</strong> no conexo.</p>
+            <p><strong>Complejidad:</strong> paso 1 = O(V(V+A)), paso 2 = O(V+A). Total O(V(V+A)).</p>
+          </div>
+        </div>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P17</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 Oct'23</span></div>
+          <div class="ex-question">Implementá <span class="inline-code">int letraMasPopular()</span> que retorne la <strong>cardinalidad</strong> (cantidad de vértices) de la componente conexa de mayor cardinalidad. Grafo no dirigido y no ponderado.</div>
+          <textarea style="min-height:100px;" placeholder="// Patrón: cantConexas + tamaño + max..."></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>Es <strong>componenteMasGrande</strong>: DFS iterativo con visitado global. Cada DFS nuevo = componente. Contar nodos visitados en cada DFS. Quedarse con el máximo.</p>
+            <p>Mismo patrón que cantConexas, pero con <code>tamaño++</code> en cada nodo visitado y <code>if (tamaño > maxTamaño) maxTamaño = tamaño</code> al terminar cada DFS.</p>
+            <p><strong>Complejidad:</strong> O(V+A).</p>
+          </div>
+        </div>
+
+        <div class="exercise-block">
+          <div class="ex-header"><span class="ex-number">P18</span><span class="difficulty" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border-color:rgba(255,107,107,0.3);">📋 May'24</span></div>
+          <div class="ex-question">Dado un grafo no dirigido, no ponderado y no conexo, implementá <span class="inline-code">int cantCompConexas(Grafo *g)</span>. Justificá su orden.</div>
+          <textarea style="min-height:100px;" placeholder="int cantCompConexas(Grafo *g) {&#10;    ...&#10;}"></textarea>
+          <button class="reveal-btn" onclick="toggleAnswer(this)">👁 Mostrar respuesta</button>
+          <div class="answer-block">
+            <div class="answer-title">Respuesta</div>
+            <p>DFS iterativo con visitado global:</p>
+            <pre style="font-size:12px;">int cantCompConexas(Grafo* g) {
+    int v = g->getV();
+    bool* visitado = new bool[v+1];
+    for (int i = 0; i <= v; i++) visitado[i] = false;
+    int comp = 0;
+    for (int i = 1; i <= v; i++) {
+        if (!visitado[i]) {
+            DFS_rec(g, i, visitado);
+            comp++;
+        }
+    }
+    delete[] visitado;
+    return comp;
+}</pre>
+            <p><strong>Orden:</strong> O(V+A). Cada nodo se visita una vez (O(V)). Cada arista se recorre una vez por cada extremo en la lista de adyacencia (O(A)). El for externo es O(V) pero el trabajo total de todos los DFS es O(V+A) porque visitado es global.</p>
+          </div>
+        </div>
+
+        <div class="notebook-box">
+          <div class="nb-title">Sección 14 — Ejercicios tipo parcial</div>
+          <span class="nb-key"><strong>18 ejercicios</strong> basados en parciales reales de May'23, Oct'23, May'24, Oct'24.</span>
+          <span class="nb-key"><strong>Cubren:</strong> AVL (3), Hash (4), Heap (2), Grafos teoría (4), Grafos implementación (5).</span>
+          <hr class="nb-divider">
+          <span class="nb-key"><strong>Cómo practicar:</strong> respondé en papel, con cronómetro (2 horas para todo). Después revelá las respuestas y compará.</span>
+          <span class="nb-key"><strong>Lo que el profe busca:</strong> que justifiques (no alcanza con la respuesta, explicá el POR QUÉ), que adaptes algoritmos conocidos, que conozcas las complejidades.</span>
         </div>
       </div>
 
